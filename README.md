@@ -5,7 +5,7 @@
 Braid is a toolkit designed to accelerate the creation, debugging, and deployment of sophisticated LangGraph agents. It bridges the gap between no-code platforms and from-scratch coding, providing a structured yet fully customizable environment for building powerful AI agents.
 
 The purpose of this tool is to address the limitations of existing agent-building solutions:
-1.  **Beyond No-Code:** While no-code tools are accessible, they are often slow, require significant human oversight, and lack the flexibility needed for complex agentic systems. Braid empowers developers to build more advanced agents by leveraging code and LLMs, enabling features like voice-to-text creation and dynamic debugging.
+1.  **Beyond No-Code:** While no-code tools are accessible, they are often slow, require significant human oversight, will soon be suboptimal compared to those designed by LLMs, and lack the flexibility needed for complex integrations. Braid empowers developers to build more advanced agents by leveraging AI coding tools (E.g. Claude Code, Cursor)  enabling features like voice-to-text creation and dynamic debugging.
 2.  **Simplified Configuration:** We automate the tedious manual API configuration required for advanced agent flows, saving you time and reducing friction.
 3.  **Rapid Iteration:** Braid is built for speed. It provides a tight feedback loop for testing, autonomous fixing, and benchmarking. Direct terminal access and pre-built LangSmith traceability allow for efficient debugging and resolution of errors.
 4.  **Resource Efficiency:** By providing foundational components like memory stores and core tool integrations out-of-the-box, Braid lets you focus your resources on what matters: agent logic, prompt design, and tool selection.
