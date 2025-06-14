@@ -6,3 +6,22 @@ credentials/
 .env*
 # Except for .env.example
 !.env.example 
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# OS-specific
+.DS_Store 
