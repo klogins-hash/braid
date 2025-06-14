@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "braid"
+version = "0.1.0"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "langchain-openai",
+    "langgraph",
+    "tavily-python",
+    "python-dotenv",
+    "yfinance",
+    "pandas",
+    "requests",
+    "lxml",
+    "llama-index",
+    "llama-index-llms-openai",
+    "llama-index-embeddings-openai",
+    "pypdf"
+]
+
+[tool.setuptools.packages.find]
+include = ["core*", "agents*"]
+
+[project.optional-dependencies]
+gworkspace = [
+    "google-api-python-client",
+    "google-auth-httplib2",
+    "google-auth-oauthlib"
+]
+slack = [
+    "slack_sdk"
+]
+ms365 = [
+    "O365"
+]
+
+[project.entry-points."braid.tools"]
+google_calendar_create_event = "core.contrib.gworkspace.google_calendar_tools:create_google_calendar_event"
+google_calendar_list_events = "core.contrib.gworkspace.google_calendar_tools:list_upcoming_events"
+gmail_send_email = "core.contrib.gworkspace.gmail_tools:gmail_send_email"
+gsheets_append_row = "core.contrib.gworkspace.gsheets_tools:gsheets_append_row"
+slack_post_message = "core.contrib.slack.slack_tools:slack_post_message"
+slack_upload_file = "core.contrib.slack.slack_tools:slack_upload_file"
+teams_post_message = "core.contrib.ms365.ms365_tools:teams_post_message"
+outlook_send_email = "core.contrib.ms365.ms365_tools:outlook_send_email"
+graph_get_user = "core.contrib.ms365.ms365_tools:graph_get_user"

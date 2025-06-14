@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: langgraph_agent_builder
+Version: 0.1.0
+Requires-Dist: langchain-openai
+Requires-Dist: langgraph
+Requires-Dist: tavily-python
+Requires-Dist: python-dotenv
+Requires-Dist: yfinance
+Requires-Dist: pandas
+Requires-Dist: requests
+Requires-Dist: lxml
+Requires-Dist: llama-index
+Requires-Dist: llama-index-llms-openai
+Requires-Dist: llama-index-embeddings-openai
+Requires-Dist: pypdf
+Provides-Extra: gworkspace
+Requires-Dist: google-api-python-client; extra == "gworkspace"
+Requires-Dist: google-auth-httplib2; extra == "gworkspace"
+Requires-Dist: google-auth-oauthlib; extra == "gworkspace"
+Provides-Extra: slack
+Requires-Dist: slack_sdk; extra == "slack"
+Provides-Extra: ms365
+Requires-Dist: O365<2.1.0; extra == "ms365"
