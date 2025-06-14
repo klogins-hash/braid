@@ -1,0 +1,8 @@
+# API Keys and Credentials
+credentials/
+*.env
+
+# Ignore all .env files
+.env*
+# Except for .env.example
+!.env.example 
