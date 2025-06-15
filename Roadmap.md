@@ -8,6 +8,9 @@ The immediate priority is to ensure the reliability of our core tool integration
 - [ ] **Microsoft 365 Test Agent:** Develop an agent to test and validate all core Microsoft 365 tools, including Teams message posting and Outlook email functionality.
 - [ ] **Slack Test Agent:** Develop an agent to test and validate core Slack integration tools, such as posting messages and uploading files.
 - [ ] **Build Additional Test Agents:** Create a suite of test agents to validate other key integrations and common use cases with eventually vertical and industry specific tool libraries.
+- [ ] **Expand Integrations with MCP:** Adopt the Model Context Protocol (MCP) to rapidly integrate with a wide range of third-party services (e.g., Jira, HubSpot, Xero). This involves running community-maintained MCP servers as containerized sidecars to provide a plug-and-play tool architecture for new agents.
+- [ ] **Slim Dependency Footprint:** Move heavy libraries (`llama-index*`, `pypdf`) into a `[rag]` optional dependency group to keep the core install lean.
+- [ ] **Unit Test Coverage:** Add unit tests for every tool function, mocking external services with `pytest-vcr` or `responses` to ensure reliability without hitting live APIs.
 
 ## Phase 2: Autonomous Evaluation Module
 To ensure agents are reliable before they are deployed, we will build a sophisticated evaluation module.
@@ -23,3 +26,4 @@ To ensure agents are reliable before they are deployed, we will build a sophisti
 The final step is to streamline the path to production.
 
 - [ ] **LangGraph Deployment Module:** Build a dedicated module to prepare and package agents for seamless deployment to LangGraph. This will handle dependency management, configuration, and final validation, making the transition from development to production as smooth as possible.
+- [ ] **Dockerized Quick-Start:** Ship a `docker-compose.yml` that spins up the app container, ngrok (for Slack / Google webhooks), and an optional Postgres instance for memory/RAG. A single `make dev` command should launch the stack and open the local agent UI.

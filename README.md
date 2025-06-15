@@ -13,7 +13,7 @@ The purpose of this tool is to address the limitations of existing agent-buildin
 
 ## Why Braid?
 
-| Dimension | Vertical templates | No-code flow tools (n8n, Zapier) | Braid Agent Builder |
+| Dimension | Vertical Tools (SaaS Software) | No-code flow tools (n8n, Zapier) | Braid Agent Builder |
 | :--- | :--- | :--- | :--- |
 | **Time-to-first-response**| Minutes*, but only for that domain | Minutes if a connector exists | Minutes for any domain |
 | **Code ownership** | Little / none | None (flows are JSON) | 100 % – pure Python in repo |

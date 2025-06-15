@@ -17,6 +17,7 @@ Required Slack App Scopes for full functionality:
 - im:history (read direct messages)
 - im:write (send direct messages)
 - users:read (get user information)
+- users:read.email (get user email addresses)
 - reactions:write (add emoji reactions)
 - search:read (search for mentions - requires a User Token)
 """
@@ -388,7 +389,8 @@ def slack_find_user_by_name(name: str) -> str:
 @tool("slack_get_user_profile", args_schema=SlackGetUserProfileInput)
 def slack_get_user_profile(user_id: str) -> str:
     """
-    Retrieves a user's profile information (name, status, title) as a JSON string.
+    Retrieves a user's profile information (name, email, status, title) as a JSON string.
+    Requires the 'users:read.email' scope.
     """
     try:
         client = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
@@ -397,6 +399,7 @@ def slack_get_user_profile(user_id: str) -> str:
         useful_profile = {
             "real_name": profile.get("real_name"),
             "display_name": profile.get("display_name"),
+            "email": profile.get("email"),
             "title": profile.get("title"),
             "status_text": profile.get("status_text"),
             "status_emoji": profile.get("status_emoji"),
