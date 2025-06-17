@@ -74,10 +74,10 @@ def new_command(project_name, tools):
         # 3. Aggregate and write dependencies to requirements.txt
         base_deps = [
             "# Core Agent & LLM Dependencies",
-            "langchain>=0.1.0",
-            "langgraph>=0.1.0",
-            "langchain-openai>=0.1.0",
-            "python-dotenv>=0.21.0",
+            "langchain>=0.2.10,<0.3.0",
+            "langgraph>=0.1.8,<0.2.0",
+            "langchain-openai>=0.1.16,<0.2.0",
+            "python-dotenv>=1.0.0",
             "typing-extensions>=4.0.0",
             ""
         ]

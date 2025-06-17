@@ -13,6 +13,7 @@ dependencies = [
     "langgraph>=0.1.0",
     "python-dotenv>=0.21.0",
     "click>=8.0.0",
+    "toml>=0.10.2",
     "tavily-python",
     "yfinance",
     "pandas",

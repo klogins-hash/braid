@@ -66,51 +66,63 @@ The core library includes pre-built, tested tool integrations for common platfor
 
 Ensure you have the necessary API keys and credentials for the services your agent will use. The `credentials/` directory can be used to store OAuth tokens (like `gworkspace_token.json`). API keys and other secrets should be managed in a `.env` file within your agent's project directory.
 
-## Workflow: Building Your First Agent with the Braid CLI
+## Workflow: The Braid Agent Lifecycle
 
-Here is the recommended workflow for building a new agent with Braid. This process is designed to be automated by an AI assistant like Cursor, but can also be performed manually.
+Here is the recommended workflow for building a new agent with Braid. This process is designed to be a rapid, three-stage lifecycle: from a simple prototype to a professional, deployable application.
 
-### Step 1: Scaffold Your Agent with the CLI
+### Stage 1: Prototype with `braid new`
 
-The fastest way to start is with the `braid new` command. It creates a new, structured agent project directory with all the necessary boilerplate.
-
-Provide the name of your agent and specify which toolsets it needs using the `--tools` flag.
+The fastest way to start is by scaffolding a simple agent. This is ideal for quickly testing an idea or building a basic automation.
 
 ```bash
 # Example: Create an agent that uses Google Workspace and Slack
 braid new sales-prep-agent --tools gworkspace,slack
-
-# Example: Create an agent with no pre-built tools for fully custom logic
-braid new custom-logic-agent
 ```
 
-The CLI will create a new folder (`sales-prep-agent/`) containing:
-- A placeholder `agent.py` to house your agent's logic.
-- A `tools/` directory containing the Python files for the requested tools (`gworkspace_tools.py`, `slack_tools.py`).
-- A `requirements.txt` file with all the necessary dependencies for the agent and its tools.
+This command creates a new folder (`sales-prep-agent/`) with a simple structure:
+- `agent.py`: A single file to house your agent's logic.
+- `tools/`: A directory containing the Python files for the requested tools.
+- `requirements.txt`: A file with all necessary dependencies.
 
-### Step 2: Implement Your Agent's Logic
+At this stage, you can implement your logic in `agent.py` and run it directly with `python agent.py` for a tight, fast debugging loop.
 
-This is where you (or an AI assistant) bring your agent to life.
-1.  Navigate into your new agent's directory: `cd sales-prep-agent`.
-2.  Open `agent.py`.
-3.  Implement your agent's core logic using LangGraph. You can import the tools from the local `tools/` directory and any helper functions directly from the core Braid library (e.g., `from core.contrib.slack.utils import post_message`).
+### Stage 2 (Optional): Professionalize with `braid add-pro-pack`
 
-The `agent-creator-template.md` file is a great resource for planning out your agent's tasks, tools, and rules before you start writing code.
+Once you are satisfied with your agent's core logic, you can upgrade it to a professional, production-grade project structure.
 
-### Step 3: Run and Debug
+Navigate into your agent's directory and run:
+```bash
+cd sales-prep-agent
+braid add-pro-pack
+```
 
-With the agent code implemented, it's time to test it.
+This powerful command transforms your project by:
+1.  **Creating a `src/` layout:** The standard for robust Python applications.
+2.  **Generating `pyproject.toml`:** Migrates your dependencies to the modern standard.
+3.  **Adding a Test Suite:** Creates a `tests/` directory and, using AI, generates a set of meaningful unit tests for your agent's specific logic, complete with mocks.
+4.  **Creating a `Makefile`:** Provides simple commands like `make install`, `make test`, and `make run`.
+5.  **Adding CI/CD:** Generates a `.github/workflows/ci.yml` file to automatically run tests on every push.
 
-1.  **Install Dependencies:** Run `pip install -r requirements.txt` from within your agent's directory.
-2.  **Set Credentials:** Create a `.env` file in your agent's directory and add the necessary API keys.
-3.  **Execute the Agent:** Run your agent directly with `python agent.py`.
+After running this, you should install the new dependencies using the Makefile:
+```bash
+# This uses poetry to install dependencies from pyproject.toml
+make install
 
-This iterative "inner loop" of coding in `agent.py` and running it in the terminal is the fastest way to identify and fix issues, test edge cases, and refine your agent's logic.
+# Now you can run your AI-generated tests!
+make test
+```
 
-### Step 4: Deploy and Observe
+### Stage 3: Package for Deployment with `braid package`
 
-Once you are satisfied with your agent's performance in local testing, you are ready for the final step.
+When you are ready to ship, run the `package` command from your agent's directory. It intelligently handles both simple and "pro" layouts.
 
-1.  **LangSmith:** Ensure your agent is configured to connect to LangSmith for full observability. This will allow you to see traces of your agent's tool use and reasoning processes.
-2.  **Deploy:** Deploy your agent to your desired environment. Braid agents are standard Python applications and can be containerized with Docker or deployed to any modern cloud platform.
+```bash
+braid package
+```
+
+This creates a `.build/` directory containing a production-ready `Dockerfile`, and a `docker-compose.yml` in your agent's root. This self-contained build kit can be deployed to any platform that supports Docker.
+
+To test your production container locally, simply run:
+```bash
+docker compose up --build
+```
