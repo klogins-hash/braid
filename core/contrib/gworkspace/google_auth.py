@@ -8,8 +8,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 TOKEN_DIR = "credentials"
-TOKEN_PATH = os.path.join(TOKEN_DIR, "google_token.json")
-CREDS_PATH = os.path.join(TOKEN_DIR, "google_credentials.json")
+TOKEN_PATH = os.path.join(TOKEN_DIR, "gworkspace_token.json")
+CREDS_PATH = os.path.join(TOKEN_DIR, "gworkspace_credentials.json")
 
 # Define all possible scopes for all Google Workspace tools here.
 # This ensures that when the user authenticates once, they grant all necessary permissions.
