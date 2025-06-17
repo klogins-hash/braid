@@ -11,9 +11,13 @@ except ImportError:
         'pip install ".[gworkspace]"'
     )
 
+import logging
 from langchain_core.tools import tool
 from pydantic.v1 import BaseModel, Field
 from .google_auth import get_google_service
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # Define the scopes required for the Google Sheets API
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -29,6 +33,9 @@ def gsheets_append_row(spreadsheet_id: str, range_name: str, values: list[list])
     Appends one or more rows to a Google Sheet.
     """
     try:
+        logger.info(
+            f"Attempting to append to sheet. ID: '{spreadsheet_id}', Range: '{range_name}'"
+        )
         service = get_google_service("sheets", "v4", SCOPES)
         body = {"values": values}
         result = (
@@ -44,9 +51,21 @@ def gsheets_append_row(spreadsheet_id: str, range_name: str, values: list[list])
         )
         return f"Successfully appended {result.get('updates').get('updatedRows')} row(s)."
     except HttpError as error:
-        return f"An error occurred with Google Sheets API: {error}"
+        error_details = f"HTTP {error.resp.status} - {error.reason}"
+        if error.content:
+            error_details += f" | Details: {error.content.decode('utf-8')}"
+        logger.error(f"Google Sheets API error: {error_details}")
+
+        # Provide more specific, actionable feedback to the user/LLM
+        if "Requested entity was not found" in error_details:
+            return f"⚠️ Error: The Google Sheet with ID '{spreadsheet_id}' was not found. Please verify the ID."
+        if "Unable to parse range" in error_details:
+            return f"⚠️ Error: The sheet name (range) '{range_name}' is invalid. Please check the exact sheet name inside your spreadsheet."
+        
+        return f"An error occurred with Google Sheets API: {error_details}"
     except Exception as e:
-        return f"An unexpected error occurred: {e}"
+        logger.error(f"Unexpected error in gsheets_append_row: {e}", exc_info=True)
+        return f"An unexpected error occurred in gsheets_append_row: {e}"
 
 def get_gsheets_tools():
     """Returns a list of all tools in this module."""

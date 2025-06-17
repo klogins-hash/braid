@@ -47,12 +47,6 @@ logger = logging.getLogger(__name__)
 # Define the scopes required for the Calendar API
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
-# Combined scopes for all Google Workspace tools to prevent auth conflicts
-COMBINED_SCOPES = [
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/calendar.events"
-]
-
 # Common timezone mappings for better user experience
 TIMEZONE_MAPPINGS = {
     "PST": "America/Los_Angeles",
@@ -272,7 +266,7 @@ def create_google_calendar_event(
             timezone = extract_timezone_from_datetime(start_time)
         
         # Step 4: Create the calendar service
-        service = get_google_service("calendar", "v3", SCOPES, COMBINED_SCOPES)
+        service = get_google_service("calendar", "v3", SCOPES)
         
         # Step 5: Prepare event data
         event_data = {
@@ -314,25 +308,15 @@ def create_google_calendar_event(
         )
         
     except HttpError as error:
-        error_details = error.content.decode('utf-8') if error.content else str(error)
-        logger.error(f"Google Calendar API error: {error.resp.status} - {error_details}")
-        
-        return (
-            f"❌ Google Calendar API error (HTTP {error.resp.status}):\n"
-            f"Details: {error_details}\n"
-            f"Event: {summary} ({start_time} to {end_time})\n"
-            f"Suggestion: Check your calendar permissions and try again."
-        )
+        error_details = f"HTTP {error.resp.status} - {error.reason}"
+        if error.content:
+            error_details += f" | Details: {error.content.decode('utf-8')}"
+        return f"Google Calendar API error: {error_details}"
         
     except Exception as e:
         logger.error(f"Unexpected error creating calendar event: {str(e)}", exc_info=True)
         
-        return (
-            f"❌ Failed to create calendar event: {str(e)}\n"
-            f"Event details: {summary} from {start_time} to {end_time}\n"
-            f"Location: {location}\n"
-            f"Please check the datetime format and try again."
-        )
+        return f"Failed to create calendar event due to an unexpected error: {e}"
 
 @tool("list_upcoming_events")
 def list_upcoming_events(max_results: int = 10) -> str:
@@ -346,7 +330,7 @@ def list_upcoming_events(max_results: int = 10) -> str:
         Formatted list of upcoming events or error message
     """
     try:
-        service = get_google_service("calendar", "v3", SCOPES, COMBINED_SCOPES)
+        service = get_google_service("calendar", "v3", SCOPES)
         
         # Get events starting from now
         now = datetime.now(pytz.UTC).isoformat().replace('+00:00', 'Z')
@@ -390,9 +374,12 @@ def list_upcoming_events(max_results: int = 10) -> str:
         return "\n".join(event_list)
         
     except HttpError as error:
-        return f"❌ Error fetching events: {error}"
+        error_details = f"HTTP {error.resp.status} - {error.reason}"
+        if error.content:
+            error_details += f" | Details: {error.content.decode('utf-8')}"
+        return f"Error fetching events: {error_details}"
     except Exception as e:
-        return f"❌ Unexpected error: {str(e)}"
+        return f"❌ Unexpected error in list_upcoming_events: {str(e)}"
 
 def get_google_calendar_tools():
     """

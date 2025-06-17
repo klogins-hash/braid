@@ -21,6 +21,8 @@ across Slack and Google Workspace.
 """
 import os
 import json
+import logging
+from dotenv import load_dotenv
 from typing import List, Annotated
 from typing_extensions import TypedDict
 
@@ -36,6 +38,9 @@ from core.contrib.slack.slack_tools import get_slack_tools
 from core.contrib.gworkspace.google_calendar_tools import get_google_calendar_tools, get_current_date_context
 from core.contrib.gworkspace.gmail_tools import get_gmail_tools
 from core.contrib.gworkspace.gsheets_tools import get_gsheets_tools
+
+# Load environment variables from .env file before anything else
+load_dotenv()
 
 # --- Agent State ---
 # MessagesState is a pre-built class that automatically handles
@@ -62,20 +67,26 @@ tool_node = ToolNode(all_tools)
 # and any contextual information it needs, like the current date.
 # This is crucial for tools that rely on accurate date/time information.
 system_prompt = f"""
-You are the "Project Kickoff Coordinator," a helpful assistant for starting new projects.
-Your goal is to automate the entire kickoff process based on a single user request from Slack.
+You are an autonomous agent called the "Project Kickoff Coordinator."
+Your job is to automate the entire kickoff process in a single, continuous workflow.
 
-**Your Responsibilities:**
-1.  **Parse Request:** Understand the project name, team members, and desired meeting time from the user's message.
-2.  **Gather Information:** Use Slack tools to find user IDs and email addresses for all team members mentioned.
-3.  **Schedule Meeting:** Use Google Calendar tools to create the kickoff meeting. Ensure you use the correct date and time.
-4.  **Log Project:** Use Google Sheets to add a record of the new project to the company's master project tracker.
-5.  **Notify Team:** Use Gmail to send a confirmation email and post a final confirmation message in the original Slack channel.
+**Workflow:**
+1.  **Find Users:** Use the `get_user_id_by_name` tool to find the Slack ID for every person mentioned.
+2.  **Get Emails:** Use the `get_user_profile` tool with the user IDs to get their email addresses.
+3.  **Create Event:** Use the `create_google_calendar_event` tool to schedule the meeting.
+4.  **Log Project:** Use the `gsheets_append_row` tool to add a new row to the project tracker.
+5.  **Notify:** Use `gmail_send_email` and `slack_post_message` to inform the team.
+
+**CRITICAL INSTRUCTIONS:**
+- Execute the workflow steps sequentially without asking for confirmation.
+- If a tool fails, report the error and stop.
+- Only provide a final summary message to the user after the entire workflow is complete. Do not output conversational messages between steps.
 
 **IMPORTANT CONTEXT:**
 - **Current Date/Time:** Use this information to correctly interpret dates like "next Tuesday".
 {get_current_date_context()}
-- **Google Sheets ID:** When logging a project, use the spreadsheet ID provided in the environment variables.
+- **Google Sheets ID:** When logging a project, use this spreadsheet ID: {os.environ.get('PROJECT_SPREADSHEET_ID')}
+- **Google Sheets Range:** When logging, you must use the range 'Sheet1!A1'.
 """
 
 # Create the ChatPromptTemplate
@@ -97,8 +108,9 @@ llm_with_tools = llm.bind_tools(all_tools)
 
 def assistant_node(state: AgentState):
     """The 'assistant' node: invokes the LLM to decide the next action."""
-    result = llm_with_tools.invoke(state)
-    return {"messages": [result]}
+    chain = prompt | llm_with_tools
+    response = chain.invoke(state)
+    return {"messages": [response]}
 
 # --- Graph Definition ---
 def build_graph():
@@ -132,6 +144,9 @@ def main():
     This function initializes the agent and enters a loop to process user input.
     It simulates a conversation, where each user input is a new kickoff request.
     """
+    # Configure logging to show info-level messages
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
     # Check for required environment variables
     required_vars = ["OPENAI_API_KEY", "SLACK_BOT_TOKEN", "SLACK_USER_TOKEN", "PROJECT_SPREADSHEET_ID"]
     if any(var not in os.environ for var in required_vars):
@@ -173,6 +188,4 @@ def main():
 if __name__ == "__main__":
     # To run this agent, you'll need a .env file in the root directory
     # with your API keys and the Google Sheet ID.
-    from dotenv import load_dotenv
-    load_dotenv()
     main() 

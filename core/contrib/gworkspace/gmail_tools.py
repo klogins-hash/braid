@@ -20,11 +20,6 @@ from .google_auth import get_google_service
 
 # Define the scopes required for the Gmail API
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
-# Combined scopes for all Google Workspace tools
-COMBINED_SCOPES = [
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/calendar.events"
-]
 
 class SendEmailInput(BaseModel):
     to: str = Field(description="The email address of the recipient.")
@@ -37,7 +32,7 @@ def gmail_send_email(to: str, subject: str, body: str) -> str:
     Sends an email from the user's Gmail account.
     """
     try:
-        service = get_google_service("gmail", "v1", SCOPES, COMBINED_SCOPES)
+        service = get_google_service("gmail", "v1", SCOPES)
         message = MIMEText(body)
         message["to"] = to
         message["subject"] = subject
