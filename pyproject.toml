@@ -5,12 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "braid"
 version = "0.1.0"
+description = "A toolkit for building, debugging, and deploying LangGraph agents."
+authors = [{ name = "Braid Team", email = "hello@braid.ai" }]
 license = { text = "Apache-2.0" }
 dependencies = [
-    "langchain-openai",
-    "langgraph",
+    "langchain>=0.1.0",
+    "langgraph>=0.1.0",
+    "python-dotenv>=0.21.0",
+    "click>=8.0.0",
     "tavily-python",
-    "python-dotenv",
     "yfinance",
     "pandas",
     "requests",
@@ -21,8 +24,15 @@ dependencies = [
     "pypdf"
 ]
 
+[project.urls]
+"Homepage" = "https://www.braid.ai"
+
+[project.scripts]
+braid = "braid.cli.main:cli"
+
 [tool.setuptools.packages.find]
-include = ["core*", "agents*"]
+include = ["braid*", "core*", "agents*"]
+where = ["."]
 
 [project.optional-dependencies]
 gworkspace = [
