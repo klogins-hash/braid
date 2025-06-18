@@ -118,20 +118,91 @@ python agent.py
 
 ### `braid package` - Package for Deployment
 
-Packages agents into production-ready Docker containers (works with both simple and production structures).
+Packages agents into production-ready Docker containers with advanced deployment features. Works with both simple and production agent structures.
 
+#### Basic Usage
+```bash
+braid package [OPTIONS]
+```
+
+#### Options
+- `--production`, `-p`: Create production-optimized containers with enhanced security and monitoring
+- `--platform`, `-t`: Target deployment platform (`docker` or `kubernetes`)
+
+#### Examples
+
+**Basic Packaging:**
 ```bash
 # Run from agent directory
 cd my-agent
 braid package
 
 # Creates .build/ directory with:
-# - Dockerfile
+# - Multi-stage Dockerfile
 # - docker-compose.yml (in agent root)
 # - Complete build context
+```
 
-# Test locally
+**Production-Optimized Packaging:**
+```bash
+# Enhanced production deployment
+braid package --production
+
+# Additional features:
+# - Security hardened containers (non-root user)
+# - Health checks and monitoring
+# - .dockerignore for optimized builds
+# - Prometheus monitoring configuration
+# - Comprehensive DEPLOYMENT.md guide
+```
+
+**Kubernetes Deployment:**
+```bash
+# Generate Kubernetes manifests
+braid package --production --platform kubernetes
+
+# Creates additional files:
+# - k8s/deployment.yaml (Kubernetes deployment)
+# - k8s/config.yaml (ConfigMaps and Secrets)
+# - Enhanced DEPLOYMENT.md with K8s instructions
+```
+
+#### Testing Your Package
+
+**Local Testing:**
+```bash
+# Test with Docker Compose
 docker compose up --build
+
+# View logs
+docker compose logs -f agent
+
+# Stop services  
+docker compose down
+```
+
+#### Troubleshooting Packaging
+
+**Code Validation Errors:**
+The package command now validates your Python code before building. Common issues:
+- **Syntax errors**: Fix unterminated strings, missing colons, indentation
+- **Import errors**: Ensure all imported functions exist and are named correctly
+
+**Docker Build Issues:**
+- Use `docker system prune` to clear build cache if changes aren't reflected
+- Check `.dockerignore` if files aren't being copied correctly
+
+**Production Testing:**
+```bash
+# Build production image
+docker build -t my-agent:latest .build/
+
+# Run with production settings
+docker run -d \
+  --name my-agent \
+  --env-file .env \
+  --restart unless-stopped \
+  my-agent:latest
 ```
 
 ## CLI Command Reference

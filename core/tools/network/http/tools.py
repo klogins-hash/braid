@@ -237,6 +237,11 @@ def web_scrape(url: str, css_selector: Optional[str] = None,
 
 # --- Tool Aggregator ---
 
-def get_web_tools():
-    """Returns a list of all web tools."""
+def get_http_tools():
+    """Returns a list of all HTTP and web tools."""
     return [http_request, web_scrape]
+
+# Legacy compatibility
+def get_web_tools():
+    """Deprecated: Use get_http_tools() instead."""
+    return get_http_tools()
