@@ -1,6 +1,6 @@
 """
-LangGraph Agent Template
-Basic LangGraph agent structure for tool-enabled AI assistants
+Daily Team Standup Coordinator Agent
+Automatically checks calendar for today's meetings and posts summaries to Slack
 """
 import os
 import logging
@@ -18,40 +18,45 @@ from langgraph.prebuilt import ToolNode, tools_condition
 # Load environment variables FIRST
 load_dotenv()
 
-# Import tools - these will be populated by the CLI based on --tools selection
-# from tools.slack_tools import get_slack_tools
-# from tools.gworkspace_tools import get_gworkspace_tools
+# Import tools
+from tools.gworkspace_tools import get_gworkspace_tools
+from tools.slack_tools import get_slack_tools
 
 # --- Agent State ---
 class AgentState(TypedDict):
     messages: Annotated[List[AnyMessage], add_messages]
 
 # --- Tool Setup ---
-# TODO: Uncomment and modify based on your selected tools
-all_tools = []  # get_slack_tools() + get_gworkspace_tools()
-tool_node = ToolNode(all_tools) if all_tools else None
+all_tools = get_gworkspace_tools() + get_slack_tools()
+tool_node = ToolNode(all_tools)
 
 # --- Model and Prompt Setup ---
 current_date = datetime.now().strftime("%Y-%m-%d")
 
 system_prompt = f"""
-You are a helpful AI assistant powered by LangGraph.
+You are the Daily Team Standup Coordinator, an autonomous agent that helps teams stay organized.
 
-**Today's Date**: {current_date}
+**Your Primary Task Today ({current_date}):**
+1. When asked to check today's meetings, look for team meetings scheduled for today
+2. For each meeting found, gather the attendee information  
+3. Post a summary to the #team-updates Slack channel (use channel ID: {os.environ.get('TEAM_UPDATES_CHANNEL_ID', 'C024BE91L')})
 
-**Available Tools**: 
-{len(all_tools)} tools available for various tasks.
+**Available Tools:**
+- Google Calendar: google_calendar_list_events (READ existing events), google_calendar_create_event (CREATE new events)
+- Gmail: gmail_send_email
+- Google Sheets: gsheets_append_row
+- Slack: slack_post_message, slack_find_user_by_name, slack_get_user_profile, and others
 
-**Instructions**:
-- Help users with their requests using available tools when appropriate
-- Be helpful, accurate, and concise
-- If you need to use tools, explain what you're doing
-- Ask for clarification when needed
+**Enhanced Workflow:**
+1. Use google_calendar_list_events to find today's meetings
+2. For each meeting, gather attendee information
+3. Create a formatted summary including meeting titles, times, and attendees
+4. Post the summary to the team Slack channel
 
-**Safety**:
-- Always confirm before taking actions that modify data
-- Respect user privacy and data protection
-- Be transparent about your capabilities and limitations
+**Rules:**
+- Before posting to Slack, always confirm the message content with the user
+- Be helpful and explain what you CAN do, even when limitations exist
+- Suggest workarounds when tools are missing
 """
 
 prompt = ChatPromptTemplate.from_messages([
@@ -60,29 +65,22 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 llm = ChatOpenAI(model="gpt-4o")
-llm_with_tools = llm.bind_tools(all_tools) if all_tools else llm
+llm_with_tools = llm.bind_tools(all_tools)
 
 # --- Graph Definition ---
 def agent_node(state: AgentState):
     """The assistant node: invokes the LLM to decide the next action."""
-    # Format messages with system prompt
+    # Extract messages from state and format with system prompt
     messages = prompt.format_messages(messages=state["messages"])
     response = llm_with_tools.invoke(messages)
     return {"messages": [response]}
 
-# Build the graph
 builder = StateGraph(AgentState)
 builder.add_node("assistant", agent_node)
-
-if tool_node:
-    builder.add_node("tools", tool_node)
-    builder.add_edge(START, "assistant")
-    builder.add_conditional_edges("assistant", tools_condition)
-    builder.add_edge("tools", "assistant")
-else:
-    # Simple graph without tools
-    builder.add_edge(START, "assistant")
-
+builder.add_node("tools", tool_node)
+builder.add_edge(START, "assistant")
+builder.add_conditional_edges("assistant", tools_condition)
+builder.add_edge("tools", "assistant")
 graph = builder.compile()
 
 # --- Main Execution Loop ---
@@ -90,7 +88,7 @@ def main():
     """Interactive conversation loop for testing the agent."""
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
-    required_vars = ["OPENAI_API_KEY"]
+    required_vars = ["OPENAI_API_KEY", "SLACK_BOT_TOKEN"]
     missing_vars = [var for var in required_vars if var not in os.environ]
     
     if missing_vars:
@@ -98,9 +96,8 @@ def main():
         print("Please check your .env file.")
         return
 
-    print("✅ LangGraph Agent is ready!")
+    print("✅ Daily Team Standup Coordinator is ready!")
     print(f"📅 Today's date: {current_date}")
-    print(f"🔧 Tools available: {len(all_tools)}")
     print("💬 Type 'quit' to exit\n")
     
     conversation: List[BaseMessage] = []

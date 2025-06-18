@@ -18,9 +18,11 @@ from langgraph.prebuilt import ToolNode, tools_condition
 # Load environment variables FIRST
 load_dotenv()
 
-# Import tools - these will be populated by the CLI based on --tools selection
-# from tools.slack_tools import get_slack_tools
-# from tools.gworkspace_tools import get_gworkspace_tools
+# Import tools
+from tools.execution_tools import get_execution_tools
+from tools.code_tools import get_code_tools
+from tools.files_tools import get_files_tools
+from tools.csv_tools import get_csv_tools
 
 # --- Agent State ---
 class AgentState(TypedDict):
@@ -28,7 +30,7 @@ class AgentState(TypedDict):
 
 # --- Tool Setup ---
 # TODO: Uncomment and modify based on your selected tools
-all_tools = []  # get_slack_tools() + get_gworkspace_tools()
+all_tools = get_execution_tools() + get_code_tools() + get_files_tools() + get_csv_tools()
 tool_node = ToolNode(all_tools) if all_tools else None
 
 # --- Model and Prompt Setup ---

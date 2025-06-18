@@ -1,0 +1,12 @@
+# Core Agent & LLM Dependencies
+langchain>=0.2.10,<0.3.0
+langgraph>=0.1.19,<0.2.0
+langchain-openai>=0.1.16,<0.2.0
+python-dotenv>=1.0.0
+typing-extensions>=4.0.0
+
+# Data Transformation
+# (uses standard library only)
+
+# File System Operations
+# (uses standard library only)

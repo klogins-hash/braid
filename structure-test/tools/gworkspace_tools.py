@@ -64,7 +64,72 @@ class GSheetsAppendRowInput(BaseModel):
     range_name: str = Field(description="The A1 notation of a range to search for a logical table of data. Values are appended after the last row of the table.")
     values: List[str] = Field(description="A list of string values to append in the new row, in order.")
 
+class GoogleCalendarListEventsInput(BaseModel):
+    max_results: int = Field(default=10, description="Maximum number of events to return (1-250).")
+    time_min: Optional[str] = Field(default=None, description="Lower bound (exclusive) for an event's end time to filter by in ISO 8601 format. Optional - defaults to now.")
+    time_max: Optional[str] = Field(default=None, description="Upper bound (exclusive) for an event's start time to filter by in ISO 8601 format. Optional.")
+    single_events: bool = Field(default=True, description="Whether to expand recurring events into instances.")
+
 # --- Google Calendar Tools ---
+
+@tool("google_calendar_list_events", args_schema=GoogleCalendarListEventsInput)
+def list_google_calendar_events(max_results: int = 10, time_min: Optional[str] = None, time_max: Optional[str] = None, single_events: bool = True) -> str:
+    """
+    Lists events from the user's primary Google Calendar.
+    Returns a formatted string with event details including title, time, attendees, and description.
+    """
+    try:
+        creds = _get_gworkspace_credentials()
+        service = build("calendar", "v3", credentials=creds)
+        
+        # If no time_min specified, default to current time
+        if time_min is None:
+            from datetime import datetime
+            time_min = datetime.utcnow().isoformat() + 'Z'
+        
+        events_result = service.events().list(
+            calendarId='primary',
+            timeMin=time_min,
+            timeMax=time_max,
+            maxResults=max_results,
+            singleEvents=single_events,
+            orderBy='startTime'
+        ).execute()
+        
+        events = events_result.get('items', [])
+        
+        if not events:
+            return "No upcoming events found."
+        
+        event_list = []
+        for event in events:
+            summary = event.get('summary', 'No title')
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            end = event['end'].get('dateTime', event['end'].get('date'))
+            
+            # Get attendees if available
+            attendees = event.get('attendees', [])
+            attendee_emails = [attendee.get('email', '') for attendee in attendees if attendee.get('email')]
+            
+            description = event.get('description', '')
+            location = event.get('location', '')
+            
+            event_info = f"• {summary}\n  Time: {start} to {end}"
+            if attendee_emails:
+                event_info += f"\n  Attendees: {', '.join(attendee_emails)}"
+            if location:
+                event_info += f"\n  Location: {location}"
+            if description:
+                event_info += f"\n  Description: {description[:100]}{'...' if len(description) > 100 else ''}"
+            
+            event_list.append(event_info)
+        
+        return "\n\n".join(event_list)
+        
+    except HttpError as error:
+        return f"An error occurred with Google Calendar API: {error}"
+    except Exception as e:
+        return f"An unexpected error occurred: {e}"
 
 @tool("google_calendar_create_event", args_schema=GoogleCalendarCreateEventInput)
 def create_google_calendar_event(summary: str, start_time: str, end_time: str, attendees: List[str], location: Optional[str] = None, description: Optional[str] = None) -> str:
@@ -139,7 +204,7 @@ def gsheets_append_row(spreadsheet_id: str, range_name: str, values: List[str]) 
 # --- Tool Aggregator ---
 
 def get_google_calendar_tools():
-    return [create_google_calendar_event]
+    return [list_google_calendar_events, create_google_calendar_event]
 
 def get_gmail_tools():
     return [gmail_send_email]
