@@ -312,6 +312,21 @@ def _validate_agent_code(agent_root, is_production_layout):
             rel_path = os.path.relpath(py_file, agent_root)
             issues.append(f"Parse error in {rel_path}: {str(e)}")
     
+    # Check for common import issues in tools.py
+    tools_file = os.path.join(src_dir, "tools.py") if is_production_layout else os.path.join(agent_root, "tools.py")
+    if os.path.exists(tools_file):
+        try:
+            with open(tools_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            # Check for import mismatches
+            import re
+            get_tools_imports = re.findall(r'from\s+\S+\s+import\s+(get_\w+_tools)', content)
+            for import_name in get_tools_imports:
+                if import_name == "get_web_tools":
+                    issues.append(f"tools.py imports deprecated 'get_web_tools' - use 'get_http_tools' instead")
+        except Exception:
+            pass  # Skip import validation if file can't be read
+    
     if issues:
         click.echo("❌ Code validation issues found:")
         for issue in issues:
