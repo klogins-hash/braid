@@ -38,9 +38,13 @@ Braid provides a solid foundation for your agents, including:
 
 ### 1. Setup Your Environment
 
-First, clone the repository. It is highly recommended to use a Python virtual environment to manage dependencies.
+First, clone the repository and set up a Python virtual environment.
 
 ```bash
+# Clone and navigate to the repository
+git clone <repository-url>
+cd braid
+
 # Create a virtual environment
 python3 -m venv .venv
 
@@ -50,79 +54,138 @@ source .venv/bin/activate
 
 ### 2. Install Braid
 
-With your virtual environment active, install the Braid toolkit in editable mode. This will also install the `braid` CLI.
+Install the Braid toolkit with the CLI:
 
 ```bash
 # Install the core package and CLI
 pip install -e .
 ```
 
-The core library includes pre-built, tested tool integrations for common platforms. The available tools are:
-- `gworkspace`: For Google Workspace (Calendar, Gmail, Sheets).
-- `slack`: For Slack messaging and channel operations.
-- `ms365`: For Microsoft 365 (Outlook, etc.).
+### 3. Verify Installation
 
-### 3. Configure Credentials
+Check that the CLI is working:
 
-Ensure you have the necessary API keys and credentials for the services your agent will use. The `credentials/` directory can be used to store OAuth tokens (like `gworkspace_token.json`). API keys and other secrets should be managed in a `.env` file within your agent's project directory.
+```bash
+braid --help
+```
+
+### 4. Available Tools
+
+Braid includes pre-built, tested tool integrations:
+
+| Tool | Purpose | Use Cases |
+|------|---------|-----------|
+| `gworkspace` | Google Workspace integration | Gmail, Calendar, Sheets, Drive automation |
+| `slack` | Slack messaging and workspace | Team communication, notifications, bot interactions |
+| `csv` | CSV file processing | Data analysis, reporting, file manipulation |
+| `files` | File operations | Read/write files, directory management |
+| `http` | Web requests and scraping | API integration, data fetching, web automation |
+| `transform` | Data transformation | Data cleaning, formatting, analysis |
+| `execution` | Workflow control | Scheduling, automation, process management |
+
+### 5. Create Your First Agent
+
+Get started with a production-ready agent:
+
+```bash
+# Create a comprehensive agent
+braid new my-first-agent --production \
+  --tools csv,files,slack \
+  --description "Data processing agent with Slack notifications"
+
+cd my-first-agent
+pip install -e '.[dev]'
+cp .env.example .env
+# Add your API keys to .env
+make test
+python src/my_first_agent/graph.py
+```
+
+**📖 For detailed CLI usage, see [CLI_USAGE.md](CLI_USAGE.md)**  
+**🚀 New to Braid? Start with [QUICK_START.md](QUICK_START.md)**
 
 ## Workflow: The Braid Agent Lifecycle
 
-Here is the recommended workflow for building a new agent with Braid. This process is designed to be a rapid, three-stage lifecycle: from a simple prototype to a professional, deployable application.
+Braid offers two pathways for building agents: **rapid prototyping** or **production-ready development**. Choose the approach that best fits your needs.
 
-### Stage 1: Prototype with `braid new`
+### Quick Start: Simple Agents
 
-The fastest way to start is by scaffolding a simple agent. This is ideal for quickly testing an idea or building a basic automation.
+For rapid prototyping and simple automations:
 
 ```bash
-# Example: Create an agent that uses Google Workspace and Slack
+# Example: Create a basic agent for quick testing
 braid new sales-prep-agent --tools gworkspace,slack
 ```
 
-This command creates a new folder (`sales-prep-agent/`) with a simple structure:
-- `agent.py`: A single file to house your agent's logic.
-- `tools/`: A directory containing the Python files for the requested tools.
-- `requirements.txt`: A file with all necessary dependencies.
+This creates a lightweight structure with:
+- `agent.py`: Single file for your agent logic
+- `tools/`: Tool implementations  
+- `requirements.txt`: Dependencies
 
-At this stage, you can implement your logic in `agent.py` and run it directly with `python agent.py` for a tight, fast debugging loop.
+Perfect for fast iteration: `python agent.py` to test immediately.
 
-### Stage 2 (Optional): Professionalize with `braid add-pro-pack`
+### Recommended: Production-Ready Agents
 
-Once you are satisfied with your agent's core logic, you can upgrade it to a professional, production-grade project structure.
+For professional development and deployment-ready agents:
 
-Navigate into your agent's directory and run:
 ```bash
-cd sales-prep-agent
-braid add-pro-pack
+# Example: Create a production-ready agent
+braid new sales-intelligence-agent --production --tools csv,files,http,slack,gworkspace --description "Sales intelligence agent that analyzes data and provides insights"
 ```
 
-This powerful command transforms your project by:
-1.  **Creating a `src/` layout:** The standard for robust Python applications.
-2.  **Generating `pyproject.toml`:** Migrates your dependencies to the modern standard.
-3.  **Adding a Test Suite:** Creates a `tests/` directory and, using AI, generates a set of meaningful unit tests for your agent's specific logic, complete with mocks.
-4.  **Creating a `Makefile`:** Provides simple commands like `make install`, `make test`, and `make run`.
-5.  **Adding CI/CD:** Generates a `.github/workflows/ci.yml` file to automatically run tests on every push.
+This creates a complete production structure:
 
-After running this, you should install the new dependencies using the Makefile:
-```bash
-# This uses poetry to install dependencies from pyproject.toml
-make install
-
-# Now you can run your AI-generated tests!
-make test
+```
+sales-intelligence-agent/
+├── README.md                  # Complete documentation
+├── pyproject.toml            # Modern Python packaging
+├── Makefile                  # Development commands
+├── langgraph.json           # LangGraph Studio integration
+├── .env.example             # Environment configuration
+├── LICENSE                  # MIT license
+├── src/
+│   └── sales_intelligence_agent/
+│       ├── __init__.py
+│       ├── configuration.py  # Agent configuration
+│       ├── graph.py         # Main LangGraph definition  
+│       ├── prompts.py       # System prompts
+│       ├── state.py         # Agent state management
+│       ├── tools.py         # Tool orchestration
+│       ├── utils.py         # Utility functions
+│       └── [tool_files].py  # Individual tool implementations
+└── tests/
+    ├── unit_tests/          # Unit test suite
+    └── integration_tests/   # Integration test suite
 ```
 
-### Stage 3: Package for Deployment with `braid package`
+**Get started immediately:**
+```bash
+cd sales-intelligence-agent
+pip install -e '.[dev]'
+cp .env.example .env          # Add your API keys
+make test                     # Verify everything works
+python src/sales_intelligence_agent/graph.py  # Run your agent
+```
 
-When you are ready to ship, run the `package` command from your agent's directory. It intelligently handles both simple and "pro" layouts.
+**Development commands:**
+```bash
+make test                     # Run unit tests
+make integration_tests        # Run integration tests  
+make lint                     # Code quality checks
+make format                   # Auto-format code
+```
+
+### Stage 2: Package for Deployment
+
+When ready to deploy, package your agent (works with both simple and production structures):
 
 ```bash
 braid package
 ```
 
-This creates a `.build/` directory containing a production-ready `Dockerfile`, and a `docker-compose.yml` in your agent's root. This self-contained build kit can be deployed to any platform that supports Docker.
+This creates a `.build/` directory with production-ready Docker files and a `docker-compose.yml` for easy deployment.
 
-To test your production container locally, simply run:
+Test locally:
 ```bash
 docker compose up --build
 ```

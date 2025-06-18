@@ -24,4 +24,4 @@ dist/
 *.db-wal
 
 # OS-specific
-.DS_Store 
+.DS_Store nango.yml/

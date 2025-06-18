@@ -54,25 +54,48 @@ Following the decision tree:
 - `files`: Store processed data and maintain logs
 - `execution`: Handle daily scheduling and workflow coordination
 
-**Command**: `braid new support-analyzer --tools http,transform,slack,gworkspace,files,execution`
+**Command**: `braid new support-analyzer --production --tools http,transform,slack,gworkspace,files,execution --description "Customer support ticket analyzer with sentiment analysis and automated reporting"`
 ```
 
-### Step 4: User Gets Complete Agent
+### Step 4: User Gets Complete Production-Ready Agent
 
-The agent is created with all necessary tools and the user can see:
+The agent is created with all necessary tools in a professional structure:
 
 ```
 support-analyzer/
-├── agent.py                    # Main LangGraph agent
-├── requirements.txt           # All dependencies included
-├── .env.example              # Required environment variables
-└── tools/
-    ├── http_tools.py          # API integration
-    ├── transform_tools.py     # Data processing
-    ├── slack_tools.py         # Team notifications
-    ├── gworkspace_tools.py    # Google Sheets integration
-    ├── files_tools.py         # File operations
-    └── execution_tools.py     # Workflow control
+├── README.md                  # Complete documentation
+├── pyproject.toml            # Modern Python packaging  
+├── Makefile                  # Development commands
+├── langgraph.json           # LangGraph Studio integration
+├── .env.example             # Required environment variables
+├── LICENSE                  # MIT license
+├── src/
+│   └── support_analyzer/
+│       ├── __init__.py
+│       ├── configuration.py  # Environment & settings
+│       ├── graph.py         # Main LangGraph agent
+│       ├── prompts.py       # System prompts
+│       ├── state.py         # Agent state management
+│       ├── tools.py         # Tool orchestration
+│       ├── utils.py         # Utility functions
+│       ├── http_tools.py    # API integration
+│       ├── transform_tools.py # Data processing
+│       ├── slack_tools.py   # Team notifications
+│       ├── gworkspace_tools.py # Google Sheets integration
+│       ├── files_tools.py   # File operations
+│       └── execution_tools.py # Workflow control
+└── tests/
+    ├── unit_tests/          # Unit test suite
+    └── integration_tests/   # Integration test suite
+```
+
+**Ready for immediate development:**
+```bash
+cd support-analyzer
+pip install -e '.[dev]'         # Install with dev dependencies
+cp .env.example .env            # Configure API keys
+make test                       # Verify everything works
+python src/support_analyzer/graph.py  # Run your agent
 ```
 
 ## Benefits Demonstrated
@@ -111,7 +134,9 @@ AI: "Based on TOOL_REFERENCE.md, you need:
      - slack: For team communication
      - files: For data storage
      
-     Command: braid new api-processor --tools http,transform,slack,files"
+     Command: braid new api-processor --production --tools http,transform,slack,files --description "API data processor with Slack notifications"
+     
+     This creates a production-ready agent with tests, documentation, and deployment files."
 ```
 
 The documentation system enables precise, confident tool recommendations that match user needs perfectly.
