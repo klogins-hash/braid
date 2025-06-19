@@ -23,14 +23,14 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
-from langgraph.prebuilt import ToolNode
 from pydantic import BaseModel
 
-# Load environment variables
+# Load environment variables and configuration
 load_dotenv()
+from config import config
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+config.setup_logging()
 logger = logging.getLogger(__name__)
 
 class MCPClient:
@@ -159,32 +159,26 @@ class MCPManager:
     
     def setup_clients(self):
         """Setup MCP clients based on available environment variables."""
-        # Setup Perplexity MCP for market research
-        if os.getenv('PERPLEXITY_API_KEY'):
-            self.clients['perplexity'] = MCPClient(
-                server_path="node",
-                server_args=["mcp_servers/perplexity/perplexity-ask/dist/index.js"],
-                env_vars={"PERPLEXITY_API_KEY": os.getenv('PERPLEXITY_API_KEY')}
-            )
+        # Note: Perplexity uses direct API calls instead of MCP
         
         # Setup Xero MCP for financial data
-        if os.getenv('XERO_ACCESS_TOKEN'):
+        if config.XERO_ACCESS_TOKEN:
             self.clients['xero'] = MCPClient(
                 server_path="node",
                 server_args=["mcp_servers/xero/dist/index.js"],
                 env_vars={
-                    "XERO_CLIENT_BEARER_TOKEN": os.getenv('XERO_ACCESS_TOKEN'),
-                    "XERO_CLIENT_ID": os.getenv('XERO_CLIENT_ID', ''),
-                    "XERO_CLIENT_SECRET": os.getenv('XERO_CLIENT_SECRET', '')
+                    "XERO_CLIENT_BEARER_TOKEN": config.XERO_ACCESS_TOKEN,
+                    "XERO_CLIENT_ID": config.XERO_CLIENT_ID,
+                    "XERO_CLIENT_SECRET": config.XERO_CLIENT_SECRET
                 }
             )
         
         # Setup Notion MCP for report generation
-        if os.getenv('NOTION_API_KEY'):
+        if config.NOTION_API_KEY:
             self.clients['notion'] = MCPClient(
                 server_path="node",
                 server_args=["mcp_servers/notion/bin/cli.mjs"],
-                env_vars={"NOTION_API_KEY": os.getenv('NOTION_API_KEY')}
+                env_vars={"NOTION_API_KEY": config.NOTION_API_KEY}
             )
     
     def start_all(self) -> Dict[str, bool]:
@@ -252,12 +246,12 @@ def get_xero_financial_data(report_type: str = "profit_and_loss", user_id: str =
     
     # Map report types to Xero MCP tool names
     tool_mapping = {
-        "profit_and_loss": "list-xero-profit-and-loss",
-        "balance_sheet": "list-xero-report-balance-sheet",
-        "trial_balance": "list-xero-trial-balance"
+        "profit_and_loss": "list-profit-and-loss",
+        "balance_sheet": "list-balance-sheet",
+        "trial_balance": "list-trial-balance"
     }
     
-    tool_name = tool_mapping.get(report_type, "list-xero-profit-and-loss")
+    tool_name = tool_mapping.get(report_type, "list-profit-and-loss")
     
     try:
         result = xero_client.call_tool(tool_name, {})
@@ -274,7 +268,7 @@ def get_xero_financial_data(report_type: str = "profit_and_loss", user_id: str =
 
 @tool
 def conduct_market_research(industry: str = "Software Development", location: str = "San Francisco, CA") -> str:
-    """Conduct market research using Perplexity MCP.
+    """Conduct market research using Perplexity API directly.
     
     Args:
         industry: Industry to research
@@ -283,33 +277,52 @@ def conduct_market_research(industry: str = "Software Development", location: st
     Returns:
         Market research insights and trends
     """
-    perplexity_client = mcp_manager.get_client('perplexity')
-    if not perplexity_client:
-        return f"Perplexity MCP not available - simulated market research for {industry} in {location}"
+    perplexity_key = config.PERPLEXITY_API_KEY
     
-    research_query = f"What are the current market trends and 5-year growth outlook for the {industry} industry in {location}? Include economic factors, opportunities, and challenges."
+    if not perplexity_key:
+        logger.warning("⚠️ Perplexity API key not available, using simulated data")
+        return f"Simulated market research: {industry} in {location} showing 12% annual growth with strong digital transformation trends"
     
     try:
-        result = perplexity_client.call_tool("perplexity_research", {
-            "messages": [{
-                "role": "user", 
-                "content": research_query
-            }]
-        })
+        import requests
         
-        if "content" in str(result):
-            logger.info(f"✅ Completed market research for {industry}")
-            # Extract content from result
-            content = result.get("content", [])
-            if content and isinstance(content, list) and len(content) > 0:
-                return content[0].get("text", str(result))
-            return str(result)
+        logger.info(f"🔍 Getting live market research for {industry} in {location}...")
+        
+        url = "https://api.perplexity.ai/chat/completions"
+        
+        headers = {
+            "Authorization": f"Bearer {perplexity_key}",
+            "Content-Type": "application/json"
+        }
+        
+        prompt = f"""Provide market analysis for the {industry} industry in {location}. Include:
+1. Industry growth outlook for next 5 years
+2. Key market trends and drivers  
+3. Revenue growth expectations
+4. Risk factors
+
+Keep it concise (3-4 sentences)."""
+
+        data = {
+            "model": "llama-3.1-sonar-large-128k-online",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.1
+        }
+        
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            market_analysis = result['choices'][0]['message']['content']
+            logger.info("✅ Live market research completed")
+            return market_analysis
         else:
-            logger.warning(f"⚠️ Perplexity MCP error: {result}")
-            return f"Simulated market research: {industry} in {location} showing 12% annual growth with strong digital transformation trends"
+            logger.warning(f"⚠️ Perplexity API error: {response.status_code}")
+            return f"Market analysis for {industry} in {location}: API request failed, using estimated 15-25% growth"
+            
     except Exception as e:
-        logger.error(f"❌ Perplexity MCP call failed: {e}")
-        return f"Error in market research, using simulated data for {industry} in {location}"
+        logger.error(f"❌ Market research error: {e}")
+        return f"Market analysis for {industry} in {location}: Error occurred, using estimated 15-25% growth"
 
 @tool
 def create_forecast_assumptions(historical_data: str, market_research: str, client_info: str) -> str:
@@ -398,8 +411,8 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
     
     try:
-        # Use default parent page ID or get from environment
-        parent_page_id = os.getenv('NOTION_DEFAULT_PAGE_ID', 'default-page-id')
+        # Use default parent page ID from config
+        parent_page_id = config.NOTION_DEFAULT_PAGE_ID or 'default-page-id'
         
         result = notion_client.call_tool("API-post-page", {
             "parent": {"page_id": parent_page_id},
@@ -449,7 +462,7 @@ def get_client_information(user_id: str = "user_123") -> str:
 llm = ChatOpenAI(
     model="gpt-4",
     temperature=0.1,
-    api_key=os.getenv('OPENAI_API_KEY')
+    api_key=config.OPENAI_API_KEY
 )
 
 # Financial Forecasting Agent
@@ -474,6 +487,13 @@ class FinancialForecastAgent:
     def startup(self) -> bool:
         """Start the agent and all MCP servers."""
         logger.info("🚀 Starting Financial Forecasting Agent with MCP integration...")
+        
+        # Validate required environment variables
+        missing_vars = config.validate_required_env_vars()
+        if missing_vars:
+            logger.error(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+            logger.info("💡 Please check your .env file and ensure all required API keys are set")
+            return False
         
         # Start MCP clients
         results = mcp_manager.start_all()
@@ -623,9 +643,34 @@ Call the tool now to create the Notion report."""
         # Tool execution node
         def execute_tools(state: ForecastAgentState) -> Dict[str, Any]:
             """Execute tools called by the agent."""
-            tool_node = ToolNode(tools)
-            result = tool_node.invoke(state)
-            return result
+            if not state.messages:
+                return {"messages": state.messages}
+            
+            last_message = state.messages[-1]
+            
+            # Check if the last message has tool calls
+            if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                tool_results = []
+                
+                for tool_call in last_message.tool_calls:
+                    tool_name = tool_call['name']
+                    tool_args = tool_call.get('args', {})
+                    
+                    # Find and execute the tool
+                    for tool in tools:
+                        if tool.name == tool_name:
+                            try:
+                                result = tool.func(**tool_args)
+                                tool_results.append(f"Tool {tool_name} result: {result}")
+                            except Exception as e:
+                                tool_results.append(f"Tool {tool_name} error: {str(e)}")
+                            break
+                
+                # Add tool results as a new message
+                tool_message = HumanMessage(content=f"Tool execution results:\n" + "\n".join(tool_results))
+                return {"messages": state.messages + [tool_message]}
+            
+            return {"messages": state.messages}
         
         # Routing function
         def should_continue(state: ForecastAgentState) -> str:
@@ -676,7 +721,7 @@ Call the tool now to create the Notion report."""
         
         workflow.add_edge("execute_tools", "step_1")  # Return to routing after tool execution
         
-        return workflow.compile()
+        return workflow.compile(checkpointer=None, interrupt_before=[], debug=False)
     
     def run_forecast(self, user_id: str = "user_123") -> str:
         """Run the complete 6-step forecasting workflow."""
@@ -690,8 +735,9 @@ Call the tool now to create the Notion report."""
         )
         
         try:
-            # Run the workflow
-            final_state = self.graph.invoke(initial_state)
+            # Run the workflow with recursion limit
+            config_dict = {"recursion_limit": 50}
+            final_state = self.graph.invoke(initial_state, config=config_dict)
             
             # Extract final response
             if final_state.messages:
@@ -714,7 +760,7 @@ Call the tool now to create the Notion report."""
         print("\n💰 Financial Forecasting Agent with MCP Integration")
         print("=" * 60)
         print("📊 6-Step Workflow: Xero → Client Info → Market Research → Assumptions → Forecast → Notion Report")
-        print("🔌 MCP Servers: Perplexity (research), Xero (financial data), Notion (reporting)")
+        print("🔌 MCP Servers: Xero (financial data), Notion (reporting) + Perplexity API (research)")
         print("Type 'forecast' to run complete workflow, 'quit' to exit")
         print("-" * 60)
         
@@ -738,9 +784,14 @@ Call the tool now to create the Notion report."""
                     print("Commands: 'forecast' (run workflow), 'status' (MCP status), 'help', 'quit'")
                     
             except KeyboardInterrupt:
+                print("\n\n🛑 Interrupted by user")
+                break
+            except EOFError:
+                print("\n\n🛑 End of input")
                 break
             except Exception as e:
-                logger.error(f"❌ Error: {e}")
+                logger.error(f"❌ Error in interactive mode: {e}")
+                continue
         
         print("\n👋 Goodbye!")
     
