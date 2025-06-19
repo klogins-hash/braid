@@ -2,6 +2,8 @@
 
 Get up and running with Braid in 5 minutes.
 
+**📖 For Claude Code**: See [CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md) for complete codebase understanding and development patterns.
+
 ## Prerequisites
 
 - Python 3.11+ installed

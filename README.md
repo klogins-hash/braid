@@ -34,6 +34,10 @@ Braid provides a solid foundation for your agents, including:
 -   **Core Tools:** Ready-to-use tools for Google Workspace and Microsoft 365.
 -   **Custom APIs:** A simple process for integrating your own tools and APIs.
 
+## 📖 For Claude Code Development
+
+**🚀 New to this codebase?** Start with **[CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)** - the complete reference for understanding this codebase and building sophisticated agents quickly.
+
 ## Getting Started
 
 ### 1. Setup Your Environment
@@ -101,8 +105,9 @@ make test
 python src/my_first_agent/graph.py
 ```
 
-**📖 For detailed CLI usage, see [CLI_USAGE.md](CLI_USAGE.md)**  
-**🚀 New to Braid? Start with [QUICK_START.md](QUICK_START.md)**
+**📖 For Claude Code: Complete reference at [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md)**  
+**🚀 New to Braid? Start with [QUICK_START.md](QUICK_START.md)**  
+**⚙️ For detailed CLI usage, see [CLI_USAGE.md](CLI_USAGE.md)**
 
 ## Workflow: The Braid Agent Lifecycle
 
