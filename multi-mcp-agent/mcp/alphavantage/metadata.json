@@ -1,0 +1,153 @@
+{
+  "mcp_info": {
+    "name": "AlphaVantage MCP Server",
+    "id": "alphavantage",
+    "category": "finance",
+    "description": "Real-time and historical financial market data including stocks, forex, cryptocurrencies, and technical indicators",
+    "repository": "https://github.com/calvernaz/alphavantage",
+    "version": "0.3.10",
+    "author": "Cesar Alvernaz",
+    "license": "MIT"
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "get_stock_quote",
+        "description": "Get real-time stock price quote for a given symbol",
+        "input_schema": {
+          "symbol": "string"
+        }
+      },
+      {
+        "name": "get_time_series_daily",
+        "description": "Get daily time series data for a stock symbol",
+        "input_schema": {
+          "symbol": "string",
+          "outputsize": "string"
+        }
+      },
+      {
+        "name": "get_time_series_intraday",
+        "description": "Get intraday time series data for a stock symbol",
+        "input_schema": {
+          "symbol": "string",
+          "interval": "string",
+          "outputsize": "string"
+        }
+      },
+      {
+        "name": "get_company_overview",
+        "description": "Get fundamental company data and financial ratios",
+        "input_schema": {
+          "symbol": "string"
+        }
+      },
+      {
+        "name": "get_forex_rate",
+        "description": "Get foreign exchange rates between currencies",
+        "input_schema": {
+          "from_currency": "string",
+          "to_currency": "string"
+        }
+      },
+      {
+        "name": "get_crypto_quote",
+        "description": "Get cryptocurrency price and market data",
+        "input_schema": {
+          "symbol": "string",
+          "market": "string"
+        }
+      },
+      {
+        "name": "get_technical_indicator",
+        "description": "Get technical analysis indicators for stocks",
+        "input_schema": {
+          "symbol": "string",
+          "function": "string",
+          "interval": "string",
+          "time_period": "number"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "authentication": {
+    "type": "api_key",
+    "required_env_vars": [
+      "ALPHAVANTAGE_API_KEY"
+    ],
+    "setup_instructions": [
+      "1. Sign up for a free account at https://www.alphavantage.co/support/#api-key",
+      "2. Get your API key from the dashboard",
+      "3. Set ALPHAVANTAGE_API_KEY environment variable"
+    ]
+  },
+  "use_cases": [
+    "Real-time stock price monitoring",
+    "Financial portfolio analysis",
+    "Market research and analysis",
+    "Algorithmic trading data feeds",
+    "Investment research and screening",
+    "Currency exchange rate tracking",
+    "Cryptocurrency market analysis",
+    "Technical analysis and charting",
+    "Financial reporting and dashboards"
+  ],
+  "requirements": {
+    "python_version": ">=3.12",
+    "pip_packages": [
+      "alphavantage>=0.3.10",
+      "load-dotenv",
+      "mcp>=1.0.0"
+    ]
+  },
+  "docker_required": true,
+  "networking": {
+    "external_access": true,
+    "ports": [],
+    "protocols": ["https"]
+  },
+  "confidence_patterns": [
+    {
+      "pattern": "stock market",
+      "weight": 0.9
+    },
+    {
+      "pattern": "financial data",
+      "weight": 0.9
+    },
+    {
+      "pattern": "stock price",
+      "weight": 0.8
+    },
+    {
+      "pattern": "market analysis",
+      "weight": 0.8
+    },
+    {
+      "pattern": "investment",
+      "weight": 0.7
+    },
+    {
+      "pattern": "portfolio",
+      "weight": 0.7
+    },
+    {
+      "pattern": "trading",
+      "weight": 0.8
+    },
+    {
+      "pattern": "forex",
+      "weight": 0.7
+    },
+    {
+      "pattern": "cryptocurrency",
+      "weight": 0.6
+    },
+    {
+      "pattern": "technical analysis",
+      "weight": 0.8
+    }
+  ]
+}

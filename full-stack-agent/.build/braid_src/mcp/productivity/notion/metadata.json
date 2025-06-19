@@ -1,0 +1,118 @@
+{
+  "mcp_info": {
+    "name": "Notion MCP Server",
+    "id": "notion",
+    "version": "latest",
+    "category": "productivity",
+    "description": "Model Context Protocol server for Notion workspace integration. Enables reading, creating, and updating Notion pages and databases through standardized MCP interface.",
+    "repository": "https://github.com/makenotion/notion-mcp-server",
+    "documentation": "https://github.com/makenotion/notion-mcp-server/blob/main/README.md",
+    "license": "MIT"
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "search_pages",
+        "description": "Search for pages in Notion workspace",
+        "parameters": ["query", "workspace_id"]
+      },
+      {
+        "name": "create_page",
+        "description": "Create a new page in Notion",
+        "parameters": ["title", "content", "parent_id", "properties"]
+      },
+      {
+        "name": "update_page", 
+        "description": "Update existing Notion page content",
+        "parameters": ["page_id", "content", "properties"]
+      },
+      {
+        "name": "read_database",
+        "description": "Query and read Notion database entries",
+        "parameters": ["database_id", "filter", "sort"]
+      },
+      {
+        "name": "create_database_entry",
+        "description": "Create new entry in Notion database",
+        "parameters": ["database_id", "properties"]
+      },
+      {
+        "name": "update_database_entry",
+        "description": "Update existing database entry",
+        "parameters": ["page_id", "properties"]
+      },
+      {
+        "name": "list_databases",
+        "description": "List all accessible databases in workspace",
+        "parameters": []
+      }
+    ],
+    "resources": [
+      "notion://pages/*",
+      "notion://databases/*",
+      "notion://workspaces/*"
+    ]
+  },
+  "use_cases": [
+    "Knowledge base management and search",
+    "Project tracking and task management",
+    "Content creation and collaborative editing",
+    "Database operations and data entry",
+    "Workspace organization and structure management",
+    "Meeting notes and documentation",
+    "CRM and customer data management"
+  ],
+  "keywords": [
+    "notion", "workspace", "pages", "database", "knowledge", "wiki", 
+    "documentation", "notes", "collaboration", "cms", "productivity"
+  ],
+  "authentication": {
+    "type": "api_key",
+    "required_env_vars": [
+      "NOTION_API_KEY"
+    ],
+    "optional_env_vars": [
+      "NOTION_WORKSPACE_ID"
+    ],
+    "setup_instructions": [
+      "1. Go to https://www.notion.so/my-integrations",
+      "2. Click 'Create new integration'",
+      "3. Fill in integration details and select workspace",
+      "4. Copy the 'Internal Integration Token'",
+      "5. Set NOTION_API_KEY environment variable",
+      "6. Share relevant pages/databases with your integration"
+    ],
+    "scopes": [
+      "read_content",
+      "update_content",
+      "insert_content"
+    ]
+  },
+  "installation": {
+    "method": "docker",
+    "docker_image": "notion-mcp-server",
+    "build_context": "https://github.com/makenotion/notion-mcp-server.git",
+    "port": 3001,
+    "health_check": "/health",
+    "complexity": "medium",
+    "estimated_setup_time": "10-15 minutes"
+  },
+  "requirements": {
+    "memory": "256MB",
+    "cpu": "0.5 cores",
+    "storage": "100MB",
+    "network": "internet access required"
+  },
+  "integration_notes": {
+    "rate_limits": "Notion API has rate limits - 3 requests per second",
+    "pagination": "Large datasets are automatically paginated",
+    "error_handling": "Graceful fallback for network issues",
+    "caching": "Optional caching for frequently accessed pages"
+  },
+  "status": "active",
+  "last_tested": "2025-06-18",
+  "compatibility": {
+    "braid_version": ">=1.0.0",
+    "mcp_version": ">=1.0.0"
+  }
+}

@@ -1,0 +1,60 @@
+services:
+  agent:
+    build:
+      context: ./.build
+      dockerfile: Dockerfile
+      target: production
+    env_file:
+    - .env
+    environment:
+    - LOG_LEVEL=INFO
+    volumes:
+    - ./credentials:/app/credentials:ro
+    - ./logs:/app/logs
+    restart: unless-stopped
+    ports:
+    - 8000:8000
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import sys; sys.exit(0)
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+    - braid-mcp-network
+    depends_on:
+      notion-mcp:
+        condition: service_healthy
+  notion-mcp:
+    build:
+      context: ./mcp/notion
+      dockerfile: Dockerfile
+    container_name: notion-mcp-server
+    environment:
+    - NOTION_API_KEY=${NOTION_API_KEY}
+    restart: unless-stopped
+    networks:
+    - braid-mcp-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8080/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+    - notion-data:/app/data
+networks:
+  braid-mcp-network:
+    driver: bridge
+    name: braid-mcp-network
+volumes:
+  notion-data:
+    driver: local

@@ -1,0 +1,86 @@
+{
+  "mcp_info": {
+    "name": "AgentQL MCP Server",
+    "id": "agentql",
+    "category": "development",
+    "description": "Web data extraction and structured scraping capabilities using AgentQL",
+    "repository": "https://github.com/tinyfish-io/agentql-mcp",
+    "version": "latest",
+    "author": "TinyFish.io",
+    "license": "MIT"
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "extract-web-data",
+        "description": "Extracts structured data from a URL using descriptive prompts",
+        "input_schema": {
+          "url": "string",
+          "data_schema": "object",
+          "prompt": "string"
+        }
+      }
+    ],
+    "resources": [],
+    "prompts": []
+  },
+  "authentication": {
+    "type": "api_key",
+    "required_env_vars": [
+      "AGENTQL_API_KEY"
+    ],
+    "setup_instructions": [
+      "1. Sign up at https://dev.agentql.com",
+      "2. Get your API key from the Dev Portal",
+      "3. Set AGENTQL_API_KEY environment variable"
+    ]
+  },
+  "use_cases": [
+    "Web scraping and data extraction",
+    "Competitive intelligence gathering",
+    "Market research automation", 
+    "Content aggregation from websites",
+    "E-commerce price monitoring",
+    "Lead generation from web sources",
+    "SEO and website analysis",
+    "News and article data collection"
+  ],
+  "requirements": {
+    "node_version": ">=16.0.0",
+    "npm_packages": [
+      "agentql-mcp"
+    ]
+  },
+  "docker_required": true,
+  "networking": {
+    "external_access": true,
+    "ports": [],
+    "protocols": ["https"]
+  },
+  "confidence_patterns": [
+    {
+      "pattern": "web scraping",
+      "weight": 0.9
+    },
+    {
+      "pattern": "data extraction",
+      "weight": 0.8
+    },
+    {
+      "pattern": "web automation",
+      "weight": 0.7
+    },
+    {
+      "pattern": "competitive intelligence",
+      "weight": 0.8
+    },
+    {
+      "pattern": "market research",
+      "weight": 0.7
+    },
+    {
+      "pattern": "website analysis",
+      "weight": 0.6
+    }
+  ]
+}

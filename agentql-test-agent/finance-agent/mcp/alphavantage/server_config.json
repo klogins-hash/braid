@@ -1,0 +1,54 @@
+{
+  "mcp_server": {
+    "command": ["python", "-m", "alphavantage_mcp_server"],
+    "args": [],
+    "env": {
+      "ALPHAVANTAGE_API_KEY": "${ALPHAVANTAGE_API_KEY}",
+      "PYTHONUNBUFFERED": "1"
+    }
+  },
+  "braid_integration": {
+    "dependencies": [
+      "git+https://github.com/calvernaz/alphavantage.git"
+    ],
+    "tool_prefix": "av_",
+    "resource_namespace": "alphavantage",
+    "auto_start": true,
+    "port": 3003,
+    "timeout": 30000
+  },
+  "docker_config": {
+    "image": "python:3.12-slim",
+    "ports": ["3003:3003"],
+    "environment": [
+      "ALPHAVANTAGE_API_KEY=${ALPHAVANTAGE_API_KEY}",
+      "PYTHONUNBUFFERED=1",
+      "PYTHONDONTWRITEBYTECODE=1"
+    ],
+    "volumes": [
+      "./alphavantage-cache:/app/cache"
+    ],
+    "health_check": {
+      "test": ["CMD", "python", "-c", "import sys; sys.exit(0)"],
+      "interval": "30s",
+      "timeout": "10s",
+      "retries": 3,
+      "start_period": "60s"
+    },
+    "command": ["python", "-m", "alphavantage_mcp_server"],
+    "working_dir": "/app",
+    "user": "nobody",
+    "restart_policy": "unless-stopped",
+    "networks": ["braid-mcp-network"]
+  },
+  "rate_limiting": {
+    "requests_per_minute": 5,
+    "requests_per_day": 500,
+    "notes": "AlphaVantage free tier allows 25 requests per day, 5 per minute"
+  },
+  "validation": {
+    "required_env_vars": ["ALPHAVANTAGE_API_KEY"],
+    "api_endpoints": ["https://www.alphavantage.co/query"],
+    "test_command": ["python", "-c", "import alphavantage_mcp_server; print('OK')"]
+  }
+}

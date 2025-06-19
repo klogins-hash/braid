@@ -1,0 +1,166 @@
+{
+  "mcp_servers": {
+    "notion": {
+      "name": "Notion MCP Server",
+      "category": "productivity",
+      "description": "Connect to Notion workspaces for reading, creating, and updating pages and databases",
+      "repository": "https://github.com/makenotion/notion-mcp-server",
+      "version": "latest",
+      "capabilities": [
+        "search_pages",
+        "create_pages",
+        "update_pages", 
+        "read_databases",
+        "create_database_entries",
+        "update_database_entries",
+        "list_workspaces"
+      ],
+      "use_cases": [
+        "notion workspace management",
+        "knowledge base operations",
+        "project tracking", 
+        "content creation and editing",
+        "database queries and updates"
+      ],
+      "keywords": [
+        "notion", "workspace", "pages", "database", "knowledge", "wiki", "documentation", "notes"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["NOTION_API_KEY"],
+        "setup_instructions": "Get API key from https://www.notion.so/my-integrations"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "agentql": {
+      "name": "AgentQL MCP Server",
+      "category": "development",
+      "description": "Web data extraction and structured scraping capabilities using AI-powered web automation",
+      "repository": "https://github.com/tinyfish-io/agentql-mcp",
+      "version": "latest",
+      "capabilities": [
+        "extract_web_data",
+        "structured_scraping",
+        "web_automation"
+      ],
+      "use_cases": [
+        "web scraping and data extraction",
+        "competitive intelligence gathering",
+        "market research automation",
+        "content aggregation from websites",
+        "e-commerce price monitoring",
+        "lead generation from web sources"
+      ],
+      "keywords": [
+        "web scraping", "data extraction", "web automation", "competitive intelligence", 
+        "market research", "website analysis", "scraping", "automation"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["AGENTQL_API_KEY"],
+        "setup_instructions": "Get API key from https://dev.agentql.com"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "alphavantage": {
+      "name": "AlphaVantage MCP Server",
+      "category": "finance",
+      "description": "Real-time and historical financial market data including stocks, forex, cryptocurrencies, and technical indicators",
+      "repository": "https://github.com/calvernaz/alphavantage",
+      "version": "0.3.10",
+      "capabilities": [
+        "stock_quotes",
+        "time_series_data",
+        "company_fundamentals",
+        "forex_rates",
+        "crypto_data",
+        "technical_indicators"
+      ],
+      "use_cases": [
+        "real-time stock price monitoring",
+        "financial portfolio analysis",
+        "market research and analysis",
+        "algorithmic trading data feeds",
+        "investment research and screening",
+        "currency exchange rate tracking"
+      ],
+      "keywords": [
+        "stock market", "financial data", "stock price", "market analysis", "investment",
+        "portfolio", "trading", "forex", "cryptocurrency", "technical analysis"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["ALPHAVANTAGE_API_KEY"],
+        "setup_instructions": "Get free API key from https://www.alphavantage.co/support/#api-key"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "perplexity": {
+      "name": "Perplexity MCP Server",
+      "category": "data",
+      "description": "Real-time web search and research capabilities using Perplexity's Sonar API for live information retrieval",
+      "repository": "https://github.com/ppl-ai/modelcontextprotocol",
+      "version": "latest",
+      "capabilities": [
+        "real_time_search",
+        "web_research",
+        "fact_checking",
+        "current_events",
+        "live_information"
+      ],
+      "use_cases": [
+        "real-time web research and fact-checking",
+        "current news and trending topics analysis",
+        "live market data and financial news",
+        "academic research with latest publications",
+        "breaking news monitoring",
+        "competitive intelligence gathering"
+      ],
+      "keywords": [
+        "real-time search", "web research", "current information", "latest news",
+        "fact-checking", "live data", "breaking news", "research assistant"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["PERPLEXITY_API_KEY"],
+        "setup_instructions": "Get API key from https://www.perplexity.ai/"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    }
+  },
+  "categories": {
+    "productivity": {
+      "description": "MCPs for workspace productivity, note-taking, and project management",
+      "examples": ["notion", "airtable", "trello", "asana"]
+    },
+    "communication": {
+      "description": "MCPs for messaging, email, and team communication platforms",
+      "examples": ["slack", "discord", "teams", "gmail"]
+    },
+    "data": {
+      "description": "MCPs for data analysis, databases, file management, and information retrieval",
+      "examples": ["perplexity", "postgres", "mongodb", "s3", "gdrive"]
+    },
+    "development": {
+      "description": "MCPs for development tools, repositories, CI/CD, and web automation",
+      "examples": ["github", "gitlab", "docker", "aws", "agentql"]
+    },
+    "finance": {
+      "description": "MCPs for financial data, accounting, and payment processing",
+      "examples": ["alphavantage", "stripe", "quickbooks", "banking", "crypto"]
+    }
+  },
+  "metadata": {
+    "version": "1.3.0",
+    "last_updated": "2025-06-19",
+    "total_mcps": 4
+  }
+}

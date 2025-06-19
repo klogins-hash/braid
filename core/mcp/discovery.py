@@ -35,6 +35,47 @@ class MCPDiscovery:
                 r"slack\s+(message|notification|channel)",
                 r"(team\s+communication|chat)\s+integration",
                 r"slack\s+(bot|automation)"
+            ],
+            "agentql": [
+                r"web\s+(scraping|automation|data\s+extraction)",
+                r"(competitive\s+intelligence|market\s+research)",
+                r"(website\s+analysis|scraping)",
+                r"(data\s+extraction|web\s+automation)"
+            ],
+            "alphavantage": [
+                r"(stock|financial|market)\s+(data|analysis|price)",
+                r"(portfolio|investment)\s+(tracking|management|analysis)",
+                r"(trading|forex|cryptocurrency)\s+(data|bot|analysis)",
+                r"(technical\s+analysis|financial\s+dashboard)",
+                r"(real.time|historical)\s+(stock|financial|market)",
+                r"(market\s+research|stock\s+screening)"
+            ],
+            "perplexity": [
+                r"(real.time|live)\s+(search|research|information)",
+                r"(current|latest|breaking)\s+(news|events|developments)",
+                r"(fact.checking|verify|validation)",
+                r"(web\s+research|information\s+retrieval)",
+                r"(research\s+assistant|current\s+data)",
+                r"(trending|recent)\s+(topics|news|information)"
+            ],
+            "mongodb": [
+                r"mongodb\s+(database|operations|atlas)",
+                r"(nosql|document)\s+(database|storage)",
+                r"(crud|database)\s+(operations|queries)",
+                r"(data\s+storage|database\s+management)",
+                r"(aggregation|collection)\s+(queries|operations)",
+                r"(atlas|cluster)\s+(management|administration)"
+            ],
+            "twilio": [
+                r"(sms|text)\s+(message|messaging|notification)",
+                r"(voice|phone)\s+(call|calling|dialing)",
+                r"whatsapp\s+(message|messaging|business)",
+                r"(email|sendgrid)\s+(sending|notification)",
+                r"(phone|number)\s+(verification|2fa|authenticate)",
+                r"(communication|messaging)\s+(platform|api|service)",
+                r"(twilio|telephony)\s+(integration|api|service)",
+                r"(customer\s+support|contact\s+center)\s+(automation|system)",
+                r"(notification|alert)\s+(system|service|automation)"
             ]
         }
     

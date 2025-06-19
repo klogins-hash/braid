@@ -1,0 +1,47 @@
+{
+  "mcp_server": {
+    "command": ["npx", "-y", "agentql-mcp"],
+    "args": [],
+    "env": {
+      "AGENTQL_API_KEY": "${AGENTQL_API_KEY}"
+    }
+  },
+  "braid_integration": {
+    "dependencies": [
+      "agentql-mcp"
+    ],
+    "tool_prefix": "agentql_",
+    "resource_namespace": "agentql",
+    "auto_start": true,
+    "port": 3002,
+    "timeout": 30000
+  },
+  "docker_config": {
+    "image": "node:18-slim",
+    "ports": ["3002:3002"],
+    "environment": [
+      "AGENTQL_API_KEY=${AGENTQL_API_KEY}",
+      "NODE_ENV=production"
+    ],
+    "volumes": [
+      "./agentql-cache:/app/cache"
+    ],
+    "health_check": {
+      "test": ["CMD", "node", "-e", "process.exit(0)"],
+      "interval": "30s",
+      "timeout": "10s",
+      "retries": 3,
+      "start_period": "60s"
+    },
+    "command": ["npx", "-y", "agentql-mcp"],
+    "working_dir": "/app",
+    "user": "node",
+    "restart_policy": "unless-stopped",
+    "networks": ["braid-mcp-network"]
+  },
+  "validation": {
+    "required_env_vars": ["AGENTQL_API_KEY"],
+    "api_endpoints": ["https://api.agentql.com"],
+    "test_command": ["npx", "agentql-mcp", "--version"]
+  }
+}

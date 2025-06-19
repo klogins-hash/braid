@@ -1,0 +1,29 @@
+services:
+  mongodb-mcp:
+    build:
+      context: ./mcp/mongodb
+      dockerfile: Dockerfile
+    container_name: mongodb-mcp-server
+    environment: []
+    restart: unless-stopped
+    networks:
+    - braid-mcp-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8080/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+    - mongodb-data:/app/data
+networks:
+  braid-mcp-network:
+    driver: bridge
+    name: braid-mcp-network
+volumes:
+  mongodb-data:
+    driver: local

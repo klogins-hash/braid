@@ -33,6 +33,185 @@
       "docker_required": true,
       "installation_complexity": "medium",
       "status": "active"
+    },
+    "agentql": {
+      "name": "AgentQL MCP Server",
+      "category": "development",
+      "description": "Web data extraction and structured scraping capabilities using AI-powered web automation",
+      "repository": "https://github.com/tinyfish-io/agentql-mcp",
+      "version": "latest",
+      "capabilities": [
+        "extract_web_data",
+        "structured_scraping",
+        "web_automation"
+      ],
+      "use_cases": [
+        "web scraping and data extraction",
+        "competitive intelligence gathering",
+        "market research automation",
+        "content aggregation from websites",
+        "e-commerce price monitoring",
+        "lead generation from web sources"
+      ],
+      "keywords": [
+        "web scraping", "data extraction", "web automation", "competitive intelligence", 
+        "market research", "website analysis", "scraping", "automation"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["AGENTQL_API_KEY"],
+        "setup_instructions": "Get API key from https://dev.agentql.com"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "alphavantage": {
+      "name": "AlphaVantage MCP Server",
+      "category": "finance",
+      "description": "Real-time and historical financial market data including stocks, forex, cryptocurrencies, and technical indicators",
+      "repository": "https://github.com/calvernaz/alphavantage",
+      "version": "0.3.10",
+      "capabilities": [
+        "stock_quotes",
+        "time_series_data",
+        "company_fundamentals",
+        "forex_rates",
+        "crypto_data",
+        "technical_indicators"
+      ],
+      "use_cases": [
+        "real-time stock price monitoring",
+        "financial portfolio analysis",
+        "market research and analysis",
+        "algorithmic trading data feeds",
+        "investment research and screening",
+        "currency exchange rate tracking"
+      ],
+      "keywords": [
+        "stock market", "financial data", "stock price", "market analysis", "investment",
+        "portfolio", "trading", "forex", "cryptocurrency", "technical analysis"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["ALPHAVANTAGE_API_KEY"],
+        "setup_instructions": "Get free API key from https://www.alphavantage.co/support/#api-key"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "perplexity": {
+      "name": "Perplexity MCP Server",
+      "category": "data",
+      "description": "Real-time web search and research capabilities using Perplexity's Sonar API for live information retrieval",
+      "repository": "https://github.com/ppl-ai/modelcontextprotocol",
+      "version": "latest",
+      "capabilities": [
+        "real_time_search",
+        "web_research",
+        "fact_checking",
+        "current_events",
+        "live_information"
+      ],
+      "use_cases": [
+        "real-time web research and fact-checking",
+        "current news and trending topics analysis",
+        "live market data and financial news",
+        "academic research with latest publications",
+        "breaking news monitoring",
+        "competitive intelligence gathering"
+      ],
+      "keywords": [
+        "real-time search", "web research", "current information", "latest news",
+        "fact-checking", "live data", "breaking news", "research assistant"
+      ],
+      "authentication": {
+        "type": "api_key",
+        "required_env_vars": ["PERPLEXITY_API_KEY"],
+        "setup_instructions": "Get API key from https://www.perplexity.ai/"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "mongodb": {
+      "name": "MongoDB MCP Server",
+      "category": "data",
+      "description": "Complete MongoDB database operations and Atlas cluster management with CRUD operations, queries, and administration tools",
+      "repository": "https://github.com/mongodb-js/mongodb-mcp-server",
+      "version": "latest",
+      "capabilities": [
+        "crud_operations",
+        "database_queries",
+        "aggregation",
+        "atlas_management",
+        "index_management",
+        "collection_administration"
+      ],
+      "use_cases": [
+        "database administration and management",
+        "application data storage and retrieval",
+        "data analysis and reporting queries",
+        "mongodb atlas cluster management",
+        "database schema and index optimization",
+        "data migration and synchronization"
+      ],
+      "keywords": [
+        "mongodb", "database operations", "nosql", "document database", "atlas",
+        "data storage", "crud operations", "aggregation"
+      ],
+      "authentication": {
+        "type": "multiple",
+        "required_env_vars": [],
+        "optional_env_vars": ["MONGODB_CONNECTION_STRING", "MONGODB_ATLAS_API_CLIENT_ID", "MONGODB_ATLAS_API_CLIENT_SECRET"],
+        "setup_instructions": "Set connection string or Atlas API credentials"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
+    "twilio": {
+      "name": "Twilio MCP Server",
+      "category": "communication",
+      "description": "Connect to Twilio's communication APIs for SMS, voice, WhatsApp, email, and serverless function management",
+      "repository": "https://github.com/twilio-labs/mcp",
+      "version": "0.6.0",
+      "capabilities": [
+        "sms_messaging",
+        "voice_calls",
+        "whatsapp_messaging",
+        "email_sending",
+        "phone_verification",
+        "number_lookup",
+        "serverless_functions",
+        "asset_management",
+        "conversations",
+        "video_conferencing"
+      ],
+      "use_cases": [
+        "ai-powered customer support automation",
+        "automated sms and voice notifications",
+        "two-factor authentication integration",
+        "whatsapp business messaging automation",
+        "email campaign management via ai",
+        "dynamic phone number lookup and validation",
+        "serverless communication workflows",
+        "multi-channel customer engagement"
+      ],
+      "keywords": [
+        "twilio", "sms", "voice", "whatsapp", "email", "phone", "communication",
+        "messaging", "calls", "notifications", "2fa", "verification", "sendgrid",
+        "serverless", "functions", "conversations", "video"
+      ],
+      "authentication": {
+        "type": "basic",
+        "required_env_vars": ["TWILIO_ACCOUNT_SID", "TWILIO_API_KEY", "TWILIO_API_SECRET"],
+        "setup_instructions": "Get API key from https://console.twilio.com/"
+      },
+      "docker_required": false,
+      "installation_complexity": "medium",
+      "status": "alpha"
     }
   },
   "categories": {
@@ -42,24 +221,24 @@
     },
     "communication": {
       "description": "MCPs for messaging, email, and team communication platforms",
-      "examples": ["slack", "discord", "teams", "gmail"]
+      "examples": ["twilio", "slack", "discord", "teams", "gmail"]
     },
     "data": {
-      "description": "MCPs for data analysis, databases, and file management",
-      "examples": ["postgres", "mongodb", "s3", "gdrive"]
+      "description": "MCPs for data analysis, databases, file management, and information retrieval",
+      "examples": ["mongodb", "perplexity", "postgres", "s3", "gdrive"]
     },
     "development": {
-      "description": "MCPs for development tools, repositories, and CI/CD",
-      "examples": ["github", "gitlab", "docker", "aws"]
+      "description": "MCPs for development tools, repositories, CI/CD, and web automation",
+      "examples": ["github", "gitlab", "docker", "aws", "agentql"]
     },
     "finance": {
       "description": "MCPs for financial data, accounting, and payment processing",
-      "examples": ["stripe", "quickbooks", "banking", "crypto"]
+      "examples": ["alphavantage", "stripe", "quickbooks", "banking", "crypto"]
     }
   },
   "metadata": {
-    "version": "1.0.0",
-    "last_updated": "2025-06-18",
-    "total_mcps": 1
+    "version": "1.5.0",
+    "last_updated": "2025-06-19",
+    "total_mcps": 6
   }
 }
