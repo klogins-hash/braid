@@ -1,6 +1,20 @@
 import click
 import os
 import shutil
+import sys
+from pathlib import Path
+
+# Add core modules to path for MCP integration
+braid_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(braid_root))
+
+try:
+    from core.mcp.discovery import MCPDiscovery
+    from core.mcp.registry import MCPRegistry
+    from core.mcp.integration import MCPIntegrator
+    MCP_AVAILABLE = True
+except ImportError as e:
+    MCP_AVAILABLE = False
 
 # Tool Registry - Organized with clear separation between in-house tools and integrations
 # 
@@ -117,22 +131,56 @@ TOOL_REGISTRY = {
 @click.command()
 @click.argument('project_name')
 @click.option('--tools', '-t', help='A comma-separated list of tool packages to include (e.g., "slack,gworkspace").')
+@click.option('--mcps', '-m', help='A comma-separated list of MCP servers to include (e.g., "notion,github").')
 @click.option('--production', '-p', is_flag=True, help='Create a production-ready agent with full project structure.')
 @click.option('--description', '-d', default='AI assistant', help='Brief description of what the agent does.')
-def new_command(project_name, tools, production, description):
+@click.option('--no-mcp-discovery', is_flag=True, help='Skip interactive MCP discovery and suggestions.')
+def new_command(project_name, tools, mcps, production, description, no_mcp_discovery):
     """
     Creates a new Braid agent project from a template.
-    You can specify foundational tools to include with --tools.
+    You can specify foundational tools to include with --tools and MCPs with --mcps.
     Use --production to create a full production-ready structure.
+    
     Examples: 
       braid new my_agent --tools slack,gworkspace
-      braid new my_agent --production --tools slack,gworkspace --description "Customer support bot"
+      braid new my_agent --mcps notion --description "Knowledge management assistant"
+      braid new my_agent --production --tools slack --mcps notion,github --description "DevOps assistant"
+      braid new my_agent --description "Customer support bot" --no-mcp-discovery
     """
     tool_list = [tool.strip() for tool in tools.split(',')] if tools else []
     for tool_name in tool_list:
         if tool_name not in TOOL_REGISTRY:
             click.echo(f"Error: Unknown tool '{tool_name}'. Available tools are: {', '.join(TOOL_REGISTRY.keys())}", err=True)
             return
+
+    # Process MCPs
+    mcp_list = [mcp.strip() for mcp in mcps.split(',')] if mcps else []
+    suggested_mcps = []
+    
+    # Validate explicitly requested MCPs
+    if MCP_AVAILABLE and mcp_list:
+        registry = MCPRegistry()
+        for mcp_name in mcp_list:
+            mcp_data = registry.get_mcp_by_id(mcp_name)
+            if not mcp_data:
+                available_mcps = [mcp_id for mcp_id in registry.list_mcps()]
+                click.echo(f"Error: Unknown MCP '{mcp_name}'. Available MCPs are: {', '.join(available_mcps)}", err=True)
+                return
+    
+    # Intelligent MCP discovery based on description
+    if MCP_AVAILABLE and not no_mcp_discovery and description != 'AI assistant':
+        discovery = MCPDiscovery()
+        analysis = discovery.analyze_task_description(description)
+        
+        # Get high-confidence suggestions (>70%)
+        high_confidence_mcps = [
+            mcp for mcp in analysis.get('suggested_mcps', [])
+            if mcp.get('confidence', 0) > 0.7
+        ]
+        
+        if high_confidence_mcps:
+            suggested_mcps = _interactive_mcp_selection(high_confidence_mcps, description, mcp_list)
+            mcp_list.extend(suggested_mcps)
 
     # Path to the base template directory
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -146,16 +194,30 @@ def new_command(project_name, tools, production, description):
 
     try:
         if production:
-            _create_production_agent(project_root, project_path, project_name, tool_list, description)
+            _create_production_agent(project_root, project_path, project_name, tool_list, mcp_list, description)
         else:
-            _create_basic_agent(template_dir, project_path, project_name, tool_list, project_root)
+            _create_basic_agent(template_dir, project_path, project_name, tool_list, mcp_list, project_root)
 
         success_message = f"✨ Agent '{project_name}' created successfully"
         if production:
             success_message += " (production-ready)"
+        
+        integrations = []
         if tool_list:
-            success_message += f" with tools: {', '.join(tool_list)}"
+            integrations.append(f"tools: {', '.join(tool_list)}")
+        if mcp_list:
+            integrations.append(f"MCPs: {', '.join(mcp_list)}")
+        if integrations:
+            success_message += f" with {', '.join(integrations)}"
+        
         click.echo(success_message)
+        
+        # Show MCP-specific information
+        if mcp_list:
+            click.echo(f"   🔧 MCP servers configured: {len(mcp_list)}")
+            if suggested_mcps:
+                click.echo(f"   🤖 AI-suggested MCPs: {', '.join(suggested_mcps)}")
+            click.echo(f"   📋 Next: Configure MCP environment variables in .env file")
         
         click.echo(f"   To get started, run:")
         click.echo(f"   cd {project_name}")
@@ -177,7 +239,7 @@ def new_command(project_name, tools, production, description):
             shutil.rmtree(project_path) 
 
 
-def _create_basic_agent(template_dir, project_path, project_name, tool_list, project_root):
+def _create_basic_agent(template_dir, project_path, project_name, tool_list, mcp_list, project_root):
     """Create a basic agent using the default template."""
     # 1. Copy the base template
     shutil.copytree(template_dir, project_path)
@@ -250,9 +312,13 @@ def _create_basic_agent(template_dir, project_path, project_name, tool_list, pro
 
     with open(os.path.join(project_path, 'requirements.txt'), 'w') as f:
         f.write('\n'.join(base_deps + tool_deps))
+    
+    # 5. Add MCP integration if MCPs are specified
+    if MCP_AVAILABLE and mcp_list:
+        _integrate_mcps_basic(project_path, mcp_list, project_root)
 
 
-def _create_production_agent(project_root, project_path, project_name, tool_list, description):
+def _create_production_agent(project_root, project_path, project_name, tool_list, mcp_list, description):
     """Create a production-ready agent using the production template."""
     template_dir = os.path.join(project_root, 'braid', 'templates', 'production')
     
@@ -333,3 +399,162 @@ def _create_production_agent(project_root, project_path, project_name, tool_list
                 
                 with open(file_path, 'w', encoding='utf-8') as f:
                     f.write(content)
+    
+    # 4. Add MCP integration if MCPs are specified
+    if MCP_AVAILABLE and mcp_list:
+        _integrate_mcps_production(project_path, mcp_list, project_root)
+
+
+def _interactive_mcp_selection(suggested_mcps, description, existing_mcps):
+    """Interactive MCP selection based on AI suggestions."""
+    if not suggested_mcps:
+        return []
+    
+    click.echo(f"\n🤖 Based on your description '{description}', I found relevant MCPs:")
+    click.echo("   MCPs are external services that extend your agent's capabilities.")
+    
+    selected_mcps = []
+    
+    for mcp in suggested_mcps:
+        if mcp['mcp_id'] in existing_mcps:
+            continue  # Skip already selected MCPs
+        
+        confidence_indicator = "🔥" if mcp['confidence'] > 0.9 else "✨" if mcp['confidence'] > 0.8 else "💡"
+        click.echo(f"\n   {confidence_indicator} {mcp['name']} (confidence: {mcp['confidence']:.0%})")
+        click.echo(f"      Category: {mcp.get('category', 'unknown')}")
+        click.echo(f"      Description: {mcp.get('description', 'No description available')}")
+        
+        if mcp.get('use_cases'):
+            click.echo(f"      Use cases: {', '.join(mcp['use_cases'][:2])}")
+        
+        # Show why it was suggested
+        if mcp.get('match_reasons'):
+            reasons = ', '.join(mcp['match_reasons'][:2])
+            click.echo(f"      Why suggested: {reasons}")
+        
+        choice = click.prompt(f"   Add {mcp['name']} to your agent?", 
+                            type=click.Choice(['y', 'n', 's']), 
+                            default='y' if mcp['confidence'] > 0.85 else 'n',
+                            show_choices=True,
+                            show_default=True)
+        
+        if choice == 'y':
+            selected_mcps.append(mcp['mcp_id'])
+            click.echo(f"   ✅ Added {mcp['name']}")
+        elif choice == 's':
+            break  # Skip remaining suggestions
+    
+    if selected_mcps:
+        click.echo(f"\n🎯 Selected {len(selected_mcps)} MCP(s): {', '.join(selected_mcps)}")
+    
+    return selected_mcps
+
+
+def _integrate_mcps_basic(project_path, mcp_list, project_root):
+    """Integrate MCPs into a basic agent."""
+    try:
+        integrator = MCPIntegrator()
+        integration_result = integrator.prepare_mcp_integration(project_path, mcp_list)
+        
+        if integration_result["success"]:
+            # Create .env.example with MCP environment variables
+            env_vars = set()
+            for var_list in integration_result["environment_vars"]:
+                if isinstance(var_list, list):
+                    env_vars.update(var_list)
+                else:
+                    env_vars.add(var_list)
+            
+            if env_vars:
+                env_example_path = os.path.join(project_path, ".env.example")
+                
+                # Read existing content if file exists
+                existing_content = ""
+                if os.path.exists(env_example_path):
+                    with open(env_example_path, 'r') as f:
+                        existing_content = f.read()
+                
+                # Add MCP environment variables
+                with open(env_example_path, 'a') as f:
+                    if existing_content and not existing_content.endswith('\n'):
+                        f.write('\n')
+                    f.write('\n# MCP Configuration\n')
+                    for var in sorted(env_vars):
+                        f.write(f'# {var}=your-{var.lower().replace("_", "-")}\n')
+        
+    except Exception as e:
+        click.echo(f"Warning: Failed to integrate MCPs: {e}", err=True)
+
+
+def _integrate_mcps_production(project_path, mcp_list, project_root):
+    """Integrate MCPs into a production agent."""
+    try:
+        integrator = MCPIntegrator()
+        integration_result = integrator.prepare_mcp_integration(project_path, mcp_list)
+        
+        if integration_result["success"]:
+            # Update .env.example with MCP environment variables
+            env_vars = set()
+            for var_list in integration_result["environment_vars"]:
+                if isinstance(var_list, list):
+                    env_vars.update(var_list)
+                else:
+                    env_vars.add(var_list)
+            
+            if env_vars:
+                env_example_path = os.path.join(project_path, ".env.example")
+                
+                # Read existing content
+                existing_content = ""
+                if os.path.exists(env_example_path):
+                    with open(env_example_path, 'r') as f:
+                        existing_content = f.read()
+                
+                # Add MCP environment variables
+                with open(env_example_path, 'a') as f:
+                    if existing_content and not existing_content.endswith('\n'):
+                        f.write('\n')
+                    f.write('\n# === MCP Server Configuration ===\n')
+                    for var in sorted(env_vars):
+                        f.write(f'# {var}=your-{var.lower().replace("_", "-")}\n')
+            
+            # Add MCP information to README
+            readme_path = os.path.join(project_path, "README.md")
+            if os.path.exists(readme_path):
+                with open(readme_path, 'r') as f:
+                    readme_content = f.read()
+                
+                # Add MCP section
+                mcp_section = f"""
+
+## MCP Integration
+
+This agent uses the following Model Context Protocol (MCP) servers:
+
+"""
+                registry = MCPRegistry()
+                for mcp_id in mcp_list:
+                    mcp_data = registry.get_mcp_by_id(mcp_id)
+                    if mcp_data:
+                        mcp_section += f"- **{mcp_data.get('name', mcp_id)}**: {mcp_data.get('description', 'No description')}\n"
+                
+                mcp_section += """
+MCPs extend your agent's capabilities with external services. They run as separate processes and communicate via the Model Context Protocol.
+
+### MCP Setup
+
+1. Configure environment variables in `.env` file
+2. MCPs are automatically dockerized during packaging (`braid package --production`)
+3. Use `docker compose up --build` to run with MCP services
+
+See `mcp/` directory for individual MCP configurations.
+"""
+                
+                # Append MCP section to README
+                readme_content += mcp_section
+                
+                with open(readme_path, 'w') as f:
+                    f.write(readme_content)
+                    
+    except Exception as e:
+        click.echo(f"Warning: Failed to integrate MCPs: {e}", err=True)
