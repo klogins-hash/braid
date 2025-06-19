@@ -225,8 +225,8 @@ OPENAI_API_KEY="your_openai_key"
 ## Support and Troubleshooting
 
 See the main documentation:
-- `AGENT_DEVELOPMENT_BEST_PRACTICES.md` - Overall patterns and anti-patterns
-- `XERO_API_INTEGRATION_GUIDE.md` - Xero-specific issues and solutions
-- `LIVE_API_INTEGRATION_CHECKLIST.md` - Pre-deployment checklist
+- [Agent Development Best Practices](../../docs/guides/agent-development/AGENT_DEVELOPMENT_BEST_PRACTICES.md) - Overall patterns and anti-patterns
+- [Xero API Integration Guide](../../docs/guides/api-integrations/XERO_API_INTEGRATION_GUIDE.md) - Xero-specific issues and solutions
+- [Live API Integration Checklist](../../docs/guides/api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md) - Pre-deployment checklist
 
 This template represents a production-ready pattern for building financial forecasting agents with live API integrations and proper observability.

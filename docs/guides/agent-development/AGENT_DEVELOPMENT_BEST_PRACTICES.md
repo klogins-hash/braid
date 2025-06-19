@@ -222,10 +222,17 @@ report_data = {
 - Validate data structures before passing between functions
 - Implement robust token management and refresh logic
 
+## Related Documentation
+
+See also:
+- [Production Best Practices](../../tutorials/langgraph_agent_guide/08_production_best_practices.md) - LangSmith tracing architecture
+- [Xero API Integration Guide](../api-integrations/XERO_API_INTEGRATION_GUIDE.md) - API-specific patterns  
+- [Live API Integration Checklist](../api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md) - Pre-development checklist
+- [Production Financial Agent Template](../../../templates/production-financial-agent/) - Complete working example
+
 ## Template Files
 
-See `/templates/production-agent/` for:
-- `langsmith_traced_agent.py` - Proper tracing template
-- `live_api_integration.py` - Robust API integration patterns
-- `data_validation.py` - Data structure validation utilities
-- `error_handling.py` - Comprehensive error handling patterns
+See `/templates/production-financial-agent/` for:
+- `run_production_live.py` - Working agent with proper tracing and live APIs
+- `requirements.txt` - Tested dependency versions
+- `README.md` - Complete setup and usage guide

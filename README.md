@@ -34,11 +34,11 @@ Braid provides everything needed for professional agent development:
 "Please prepare to create a LangGraph agent by reading your development guide."
 ```
 
-Claude Code will read [CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md) and understand the full system.
+Claude Code will read [CLAUDE_CODE_GUIDE.md](docs/getting-started/CLAUDE_CODE_GUIDE.md) and understand the full system.
 
 ### Step 2: Define Your Agent Requirements
 
-Fill out the [agent-creator-template.md](./agent-creator-template.md) with your requirements:
+Fill out the [agent-creator-template.md](docs/guides/agent-development/agent-creator-template.md) with your requirements:
 
 ```markdown
 ## Core Tasks and Sequences of Agent
@@ -156,24 +156,24 @@ pip install -e .
 
 ### Start Building
 1. **Ask Claude Code to prepare**: "Please prepare to create a LangGraph agent"
-2. **Fill out requirements**: Use [agent-creator-template.md](./agent-creator-template.md)  
+2. **Fill out requirements**: Use [agent-creator-template.md](docs/guides/agent-development/agent-creator-template.md)  
 3. **Create your agent**: "Please read my requirements and create the agent"
 4. **Enhance & deploy**: Optional Pro Pack and production deployment
 
 ## Documentation
 
-**For Users**:
-- **[agent-creator-template.md](./agent-creator-template.md)** - Requirements template
-- **[QUICK_START.md](./QUICK_START.md)** - 5-minute setup guide
+**📚 [Complete Documentation Hub](docs/README.md)** - Organized navigation for all guides and references
 
-**For Claude Code**:
-- **[CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)** - Complete development reference
-- **[TOOL_REFERENCE.md](./TOOL_REFERENCE.md)** - Tool capabilities
-- **[TOOL_SELECTION_GUIDE.md](./TOOL_SELECTION_GUIDE.md)** - Decision frameworks
+**🚀 Quick Access**:
+- **[Getting Started](docs/getting-started/)** - Quick start and Claude Code integration
+- **[Development Guides](docs/guides/)** - Agent development, API integrations, troubleshooting
+- **[Tutorials](docs/tutorials/)** - Step-by-step LangGraph learning path
+- **[Reference](docs/reference/)** - Tool capabilities and CLI usage
 
-**Advanced Topics**:
-- **[langgraph_agent_guide/](./langgraph_agent_guide/)** - Deep LangGraph concepts
-- **[PRODUCTION_MCP_SUMMARY.md](./PRODUCTION_MCP_SUMMARY.md)** - MCP architecture
+**⭐ Essential for Complex Agents**:
+- **[Agent Development Best Practices](docs/guides/agent-development/AGENT_DEVELOPMENT_BEST_PRACTICES.md)** - Prevents LangSmith tracing issues
+- **[Live API Integration Checklist](docs/guides/api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md)** - Pre-development checklist
+- **[Production Templates](templates/)** - Battle-tested patterns from real projects
 
 ## What Makes Braid Different
 

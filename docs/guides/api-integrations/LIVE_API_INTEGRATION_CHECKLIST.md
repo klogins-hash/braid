@@ -266,3 +266,11 @@ def validate_jwt_token(token):
 ```
 
 This checklist prevents the major issues we encountered during financial forecasting agent development and ensures robust live API integrations.
+
+## Related Documentation
+
+See also:
+- [Agent Development Best Practices](../agent-development/AGENT_DEVELOPMENT_BEST_PRACTICES.md) - Overall patterns and anti-patterns
+- [Xero API Integration Guide](./XERO_API_INTEGRATION_GUIDE.md) - Xero-specific troubleshooting
+- [Production Financial Agent Template](../../../templates/production-financial-agent/) - Working example
+- [Production Best Practices](../../tutorials/langgraph_agent_guide/08_production_best_practices.md) - LangSmith tracing
