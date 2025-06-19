@@ -12,6 +12,9 @@ sys.path.insert(0, str(braid_root))
 try:
     from core.mcp.integration import MCPIntegrator
     from core.mcp.discovery import MCPDiscovery
+    from core.mcp.deployment_optimizer import MCPDeploymentOptimizer
+    from core.mcp.health_monitor import MCPHealthMonitor
+    from core.mcp.error_handler import MCPErrorHandler
     MCP_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: MCP integration not available: {e}")
@@ -774,11 +777,31 @@ def _detect_and_prepare_mcps(agent_root: str, production_mode: bool) -> Dict[str
         result["mcps_found"] = mcps_found
         click.echo(f"   🔧 Detected {len(mcps_found)} MCP(s): {', '.join(mcps_found)}")
         
-        # Initialize MCP integrator
+        # Initialize MCP components
         integrator = MCPIntegrator()
+        optimizer = MCPDeploymentOptimizer()
         
-        # Dockerize MCPs if production mode
+        # Analyze deployment requirements
+        deployment_analysis = optimizer.analyze_deployment_requirements(mcps_found)
+        click.echo(f"   📊 Deployment analysis: {deployment_analysis['recommended_profile']} profile recommended")
+        
+        # Apply production optimizations
         if production_mode:
+            click.echo("   🚀 Applying production optimizations...")
+            
+            # Optimize agent structure
+            optimization_result = optimizer.optimize_agent_structure(
+                Path(agent_root), 
+                mcps_found, 
+                profile="production"
+            )
+            
+            if optimization_result:
+                click.echo(f"   ✅ Applied {len(optimization_result['optimizations_applied'])} optimizations")
+                for opt in optimization_result['optimizations_applied']:
+                    click.echo(f"      - {opt}")
+            
+            # Dockerize MCPs for production deployment
             click.echo("   🐳 Dockerizing MCPs for production deployment...")
             docker_result = integrator.prepare_mcp_dockerization(
                 agent_root, mcps_found, production_mode=True

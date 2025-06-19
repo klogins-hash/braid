@@ -210,7 +210,7 @@ class MCPDiscovery:
         
         return min(total_weighted_confidence / total_weight, 1.0)
     
-    def should_suggest_mcp(self, task_description: str, threshold: float = 0.6) -> bool:
+    def should_suggest_mcp(self, task_description: str, threshold: float = 0.4) -> bool:
         """Determine if an MCP should be suggested for the given task.
         
         Args:
