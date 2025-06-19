@@ -28,7 +28,8 @@ class MCPDockerTemplates:
         self.templates = {
             "nodejs": self._create_nodejs_template(),
             "python": self._create_python_template(),
-            "custom": self._create_custom_template()
+            "custom": self._create_custom_template(),
+            "xero": self._create_xero_template()
         }
     
     def _create_nodejs_template(self) -> MCPDockerTemplate:
@@ -100,6 +101,33 @@ class MCPDockerTemplates:
             dependencies=[]
         )
     
+    def _create_xero_template(self) -> MCPDockerTemplate:
+        """Template for Xero MCP server."""
+        return MCPDockerTemplate(
+            name="xero_mcp",
+            base_image="node:18-alpine",
+            install_commands=[
+                "apk add --no-cache curl git python3 make g++",
+                "npm config set fund false",
+                "npm config set audit false"
+            ],
+            run_command=["node", "dist/index.js"],
+            health_check={
+                "test": ["CMD", "node", "-e", "console.log('Health check'); process.exit(0)"],
+                "interval": "30s",
+                "timeout": "15s",
+                "retries": 3,
+                "start_period": "90s"
+            },
+            environment_vars=[
+                "NODE_ENV=production",
+                "NODE_OPTIONS=--max-old-space-size=512"
+            ],
+            ports=["3004"],
+            volumes=["/app/cache"],
+            dependencies=["@xeroapi/xero-node", "mcp-server"]
+        )
+    
     def get_template(self, template_type: str) -> Optional[MCPDockerTemplate]:
         """Get a Docker template by type."""
         return self.templates.get(template_type)
@@ -109,6 +137,10 @@ class MCPDockerTemplates:
         # Check for specific indicators
         dependencies = mcp_config.get("dependencies", [])
         command = mcp_config.get("command", [])
+        
+        # Check for specific MCP servers first
+        if any("xero" in dep.lower() for dep in dependencies):
+            return "xero"
         
         # Node.js indicators
         if any("npm" in dep or "@" in dep for dep in dependencies):
@@ -163,6 +195,12 @@ COPY --chown=mcp:mcp . /app/
             dockerfile_content += "RUN npm ci --only=production\n"
         elif template_type == "python":
             dockerfile_content += "RUN pip install --no-cache-dir -r requirements.txt\n"
+        elif template_type == "xero":
+            dockerfile_content += """# Clone and build Xero MCP server
+RUN git clone https://github.com/XeroAPI/xero-mcp-server.git .
+RUN npm ci --only=production
+RUN npm run build
+"""
         
         # Add environment variables
         for env_var in template.environment_vars:

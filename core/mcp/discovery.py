@@ -50,6 +50,20 @@ class MCPDiscovery:
                 r"(real.time|historical)\s+(stock|financial|market)",
                 r"(market\s+research|stock\s+screening)"
             ],
+            "xero": [
+                r"(accounting|bookkeeping)\s+(software|system|management)",
+                r"(invoice|invoicing)\s+(create|management|automation)",
+                r"(financial|accounting)\s+(reporting|analysis|statements)",
+                r"(chart\s+of\s+accounts|accounting\s+data)",
+                r"(contact|customer|supplier)\s+(management|database)",
+                r"(payment|expense|receipt)\s+(tracking|processing|management)",
+                r"(trial\s+balance|profit\s+and\s+loss|balance\s+sheet)",
+                r"(purchase\s+order|expense\s+claim|credit\s+note)",
+                r"(bank\s+reconciliation|transaction\s+matching)",
+                r"(tax\s+calculation|budget\s+planning|inventory\s+management)",
+                r"xero\s+(integration|api|accounting|sync)",
+                r"(business\s+accounting|financial\s+management|accounting\s+automation)"
+            ],
             "perplexity": [
                 r"(real.time|live)\s+(search|research|information)",
                 r"(current|latest|breaking)\s+(news|events|developments)",

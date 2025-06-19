@@ -171,6 +171,58 @@
       "installation_complexity": "medium",
       "status": "active"
     },
+    "xero": {
+      "name": "Xero MCP Server",
+      "category": "finance",
+      "description": "Comprehensive accounting and financial management through Xero API with 50+ commands for contacts, invoicing, accounts, and financial reporting",
+      "repository": "https://github.com/XeroAPI/xero-mcp-server",
+      "version": "latest",
+      "capabilities": [
+        "invoice_management",
+        "contact_management",
+        "account_management",
+        "payment_processing",
+        "financial_reporting",
+        "bank_transactions",
+        "purchase_orders",
+        "expense_claims",
+        "credit_notes",
+        "receipts",
+        "journal_entries",
+        "inventory_items",
+        "tax_rates",
+        "tracking_categories",
+        "budgets"
+      ],
+      "use_cases": [
+        "automated invoice creation and management",
+        "contact and customer relationship management",
+        "financial reporting and analysis",
+        "chart of accounts management",
+        "payment tracking and reconciliation",
+        "expense claim processing",
+        "purchase order management",
+        "bank transaction reconciliation",
+        "tax calculation and reporting",
+        "budget planning and tracking",
+        "inventory management",
+        "multi-currency accounting"
+      ],
+      "keywords": [
+        "accounting", "xero", "invoice", "bookkeeping", "financial reporting",
+        "chart of accounts", "contacts", "customers", "suppliers", "payments",
+        "expenses", "purchase orders", "receipts", "trial balance", "profit and loss",
+        "balance sheet", "tax", "budget", "bank reconciliation", "financial management"
+      ],
+      "authentication": {
+        "type": "bearer_token",
+        "required_env_vars": ["XERO_BEARER_TOKEN"],
+        "setup_instructions": "Get bearer token from https://developer.xero.com/"
+      },
+      "docker_required": true,
+      "installation_complexity": "medium",
+      "status": "active"
+    },
     "twilio": {
       "name": "Twilio MCP Server",
       "category": "communication",
@@ -233,12 +285,12 @@
     },
     "finance": {
       "description": "MCPs for financial data, accounting, and payment processing",
-      "examples": ["alphavantage", "stripe", "quickbooks", "banking", "crypto"]
+      "examples": ["alphavantage", "xero", "stripe", "quickbooks", "banking", "crypto"]
     }
   },
   "metadata": {
-    "version": "1.5.0",
+    "version": "1.6.0",
     "last_updated": "2025-06-19",
-    "total_mcps": 6
+    "total_mcps": 7
   }
 }
