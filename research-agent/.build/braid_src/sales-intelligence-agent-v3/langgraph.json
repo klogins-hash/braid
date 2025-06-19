@@ -1,7 +1,0 @@
-{
-  "dependencies": ["."],
-  "graphs": {
-    "agent": "./src/sales_intelligence_agent_v3/graph.py:graph"
-  },
-  "env": ".env"
-}

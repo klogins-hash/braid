@@ -1,1 +1,0 @@
-"""Integration tests for sales-intelligence-agent-v2."""
