@@ -1,218 +1,209 @@
-# Braid - Agent Builder
+# Braid - AI Agent Development System
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-Braid is a toolkit designed for agentic coding tools (E.g. Cursor, Claude Code) to accelerate the creation, debugging, and deployment of sophisticated LangGraph agents. It bridges the gap between no-code platforms and from-scratch coding, providing a structured yet fully customizable environment for building powerful AI agents.
-
-The purpose of this tool is to address the limitations of existing agent-building solutions:
-1.  **Beyond No-Code:** While no-code tools are accessible, they are often slow, have limited observability and human-in-the-loop capabiltiies, require significant human oversight, will become increasingly suboptimal compared to increasingly advanced LLMs, and lack flexibility needed for complex integrations. Braid empowers developers to build more advanced agents by leveraging AI coding tools (E.g. Claude Code, Cursor)  enabling features like voice-to-text creation and dynamic debugging.
-2.  **Simplified Configuration:** We automate the tedious manual API configuration required for advanced agent flows, saving coding agents time and applying more energy on agent architecture, prompt design, and evaluation.
-3.  **Rapid Iteration:** Braid is built for speed. It provides a tight feedback loop for testing, autonomous fixing, and benchmarking. Direct terminal access and pre-built LangSmith traceability allow for efficient debugging and resolution of errors.
-4.  **Resource Efficiency:** By providing foundational components like memory stores and core tool integrations out-of-the-box, Braid lets you focus your resources on what matters: agent logic, prompt design, and tool selection.
-5.  **Reliable Integrations:** We provide pre-defined, tested integrations for common tools like Slack, minimizing the "first-time-use" issues that often plague new agent setups.
+Braid is a comprehensive toolkit designed for building sophisticated LangGraph agents through AI-powered development. Instead of wrestling with complex setup and configuration, you work directly with Claude Code to create production-ready agents in minutes.
 
 ## Why Braid?
 
-| Dimension | Vertical Tools (SaaS Software) | No-code flow tools (n8n, Zapier) | Braid Agent Builder |
+| Dimension | Traditional No-Code | Manual Coding | Braid + Claude Code |
 | :--- | :--- | :--- | :--- |
-| **Time-to-first-response**| Minutes*, but only for that domain | Minutes if a connector exists | Minutes for any domain |
-| **Code ownership** | Little / none | None (flows are JSON) | 100 % – pure Python in repo |
-| **Custom logic** | Hard / unavailable | Limited to JS snippets | Full Python; edit scaffold |
-| **Data residency** | Vendor cloud | Vendor cloud | Self-host or VPC |
-| **Headless invocation** | Rare | Webhooks, but no memory | Native; expose as Tool or API |
-| **Memory flexibility** | Fixed | Simple key/value | Vector, RAG, checkpoints |
-| **Cost** | Subscription per seat / tenant | Subscription + task fees | Only infra + LLM usage |
+| **Setup Time** | Minutes, limited scope | Hours/Days of boilerplate | Minutes, any complexity |
+| **Customization** | Limited to presets | Full control, high effort | Full control, AI-assisted |
+| **Production Ready** | Basic deployment | Complex infrastructure setup | Enterprise-grade packaging |
+| **Debugging** | Black box flows | Manual instrumentation | Built-in observability |
+| **Integration** | Preset connectors only | Build everything yourself | 40+ tools + 6 MCPs ready |
 
+## What You Get
 
-## Foundation Structure
+Braid provides everything needed for professional agent development:
 
-Braid provides a solid foundation for your agents, including:
+- **🏗️ Agent Architecture**: Production-ready LangGraph patterns
+- **🛠️ 40+ Tools**: Google Workspace, Slack, data processing, APIs, workflows
+- **🔌 6 MCPs**: Notion, Twilio, Perplexity, MongoDB, AgentQL, AlphaVantage  
+- **💾 Memory Systems**: Persistent conversations, RAG, vector storage
+- **📦 Production Deployment**: Docker, Kubernetes, monitoring, security
+- **🧪 Testing Framework**: Unit tests, integration tests, debugging tools
 
--   **Agent Logic:** A clear structure for defining your agent's core behavior.
--   **Memory Store:** Support for various memory backends (Postgres, RAG, SQL).
--   **Chat Interface:** Pre-built integrations for Slack and Microsoft Teams.
--   **Core Tools:** Ready-to-use tools for Google Workspace and Microsoft 365.
--   **Custom APIs:** A simple process for integrating your own tools and APIs.
+## How It Works
 
-## 📖 For Claude Code Development
+**You don't use CLIs or write boilerplate.** You work with Claude Code to build agents through natural conversation:
 
-**🚀 New to this codebase?** Start with **[CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)** - the complete reference for understanding this codebase and building sophisticated agents quickly.
+### Step 1: Prepare Claude Code
+```
+"Please prepare to create a LangGraph agent by reading your development guide."
+```
+
+Claude Code will read [CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md) and understand the full system.
+
+### Step 2: Define Your Agent Requirements
+
+Fill out the [agent-creator-template.md](./agent-creator-template.md) with your requirements:
+
+```markdown
+## Core Tasks and Sequences of Agent
+**Your Requirements**: 
+I need an agent that monitors customer support tickets, analyzes sentiment, 
+and posts daily summaries to Slack with trend data in Google Sheets.
+
+## Tools & MCPs Required
+**Your Required Tools & MCPs**: 
+[Claude Code will recommend optimal combinations]
+```
+
+### Step 3: Create Your Agent
+```
+"Please read my agent requirements and create the agent."
+```
+
+Claude Code will:
+- Analyze your requirements
+- Select optimal tools and MCPs
+- Create production-ready agent structure
+- Set up all configurations and dependencies
+- Provide testing and deployment instructions
+
+### Step 4: Enhance with Pro Pack (Optional)
+```
+"Please add the Braid Pro Pack for enhanced testing and monitoring."
+```
+
+This adds:
+- Advanced unit test suites
+- Integration test frameworks
+- Performance monitoring
+- Error handling enhancements
+- Development workflows
+
+### Step 5: Prepare for Deployment
+```
+"Please prepare this agent for production deployment."
+```
+
+Claude Code will:
+- Package with optimized Docker containers
+- Set up production monitoring
+- Create deployment documentation
+- Configure security hardening
+- Generate Kubernetes manifests (if needed)
+
+## Available Capabilities
+
+### 🛠️ Built-in Tools
+- **Google Workspace**: Gmail, Calendar, Sheets, Drive
+- **Slack**: Messaging, notifications, file sharing (12 tools)
+- **Data Processing**: CSV, file operations, ETL transformations
+- **Web Integration**: HTTP APIs, web scraping
+- **Workflow Control**: Scheduling, delays, sub-processes
+- **Code Execution**: Python, JavaScript runtime
+
+### 🔌 MCP Integrations
+- **Notion**: Workspace and knowledge management
+- **Twilio**: SMS, voice, WhatsApp messaging
+- **Perplexity**: Real-time search and research
+- **MongoDB**: Database operations
+- **AgentQL**: Web automation and scraping
+- **AlphaVantage**: Financial market data
+
+### 🏗️ Agent Patterns
+- **ReAct Agents**: Tool-using conversational agents
+- **Multi-Step Workflows**: Complex business processes
+- **Memory-Enabled**: Persistent conversations
+- **RAG-Powered**: Document-aware agents
+- **Multi-Agent Systems**: Orchestrated agent teams
+
+## Real Examples
+
+### Customer Support Agent
+```
+Requirements: Monitor tickets → Analyze sentiment → Daily Slack reports + Google Sheets trends
+Tools: http, transform, slack, gworkspace
+Result: Complete automated support intelligence system
+```
+
+### Research & Analysis Agent  
+```
+Requirements: Search topics → Generate insights → Create reports → Share with team
+Tools: http, files + MCPs: perplexity, notion
+Result: AI-powered research assistant
+```
+
+### Data Processing Pipeline
+```
+Requirements: Fetch API data → Clean & analyze → Generate reports → Notify stakeholders
+Tools: http, transform, csv, files, slack
+Result: Automated data intelligence pipeline
+```
 
 ## Getting Started
 
-### 1. Setup Your Environment
+### Prerequisites
+- Python 3.11+ installed
+- Access to Claude Code
+- API keys for desired integrations (OpenAI, Slack, etc.)
 
-First, clone the repository and set up a Python virtual environment.
-
+### Setup
 ```bash
-# Clone and navigate to the repository
+# Clone the repository
 git clone <repository-url>
 cd braid
 
-# Create a virtual environment
+# Set up environment
 python3 -m venv .venv
-
-# Activate it (on macOS/Linux)
-source .venv/bin/activate
-```
-
-### 2. Install Braid
-
-Install the Braid toolkit with the CLI:
-
-```bash
-# Install the core package and CLI
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
-### 3. Verify Installation
+### Start Building
+1. **Ask Claude Code to prepare**: "Please prepare to create a LangGraph agent"
+2. **Fill out requirements**: Use [agent-creator-template.md](./agent-creator-template.md)  
+3. **Create your agent**: "Please read my requirements and create the agent"
+4. **Enhance & deploy**: Optional Pro Pack and production deployment
 
-Check that the CLI is working:
+## Documentation
 
-```bash
-braid --help
+**For Users**:
+- **[agent-creator-template.md](./agent-creator-template.md)** - Requirements template
+- **[QUICK_START.md](./QUICK_START.md)** - 5-minute setup guide
+
+**For Claude Code**:
+- **[CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)** - Complete development reference
+- **[TOOL_REFERENCE.md](./TOOL_REFERENCE.md)** - Tool capabilities
+- **[TOOL_SELECTION_GUIDE.md](./TOOL_SELECTION_GUIDE.md)** - Decision frameworks
+
+**Advanced Topics**:
+- **[langgraph_agent_guide/](./langgraph_agent_guide/)** - Deep LangGraph concepts
+- **[PRODUCTION_MCP_SUMMARY.md](./PRODUCTION_MCP_SUMMARY.md)** - MCP architecture
+
+## What Makes Braid Different
+
+### Traditional Approach
+```
+1. Learn LangGraph concepts (weeks)
+2. Set up project structure (hours)  
+3. Configure tools and integrations (days)
+4. Write boilerplate code (hours)
+5. Set up testing framework (hours)
+6. Configure deployment (days)
+7. Debug and iterate (weeks)
 ```
 
-### 4. Available Tools
-
-Braid includes pre-built, tested tool integrations:
-
-| Tool | Purpose | Use Cases |
-|------|---------|-----------|
-| `gworkspace` | Google Workspace integration | Gmail, Calendar, Sheets, Drive automation |
-| `slack` | Slack messaging and workspace | Team communication, notifications, bot interactions |
-| `csv` | CSV file processing | Data analysis, reporting, file manipulation |
-| `files` | File operations | Read/write files, directory management |
-| `http` | Web requests and scraping | API integration, data fetching, web automation |
-| `transform` | Data transformation | Data cleaning, formatting, analysis |
-| `execution` | Workflow control | Scheduling, automation, process management |
-
-### 5. Create Your First Agent
-
-Get started with a production-ready agent:
-
-```bash
-# Create a comprehensive agent
-braid new my-first-agent --production \
-  --tools csv,files,slack \
-  --description "Data processing agent with Slack notifications"
-
-cd my-first-agent
-pip install -e '.[dev]'
-cp .env.example .env
-# Add your API keys to .env
-make test
-python src/my_first_agent/graph.py
+### Braid + Claude Code
+```
+1. Describe what you want (minutes)
+2. Get production-ready agent (minutes)
+3. Test and iterate (minutes)
+4. Deploy to production (minutes)
 ```
 
-**📖 For Claude Code: Complete reference at [CLAUDE_CODE_GUIDE.md](CLAUDE_CODE_GUIDE.md)**  
-**🚀 New to Braid? Start with [QUICK_START.md](QUICK_START.md)**  
-**⚙️ For detailed CLI usage, see [CLI_USAGE.md](CLI_USAGE.md)**
+## Enterprise Features
 
-## Workflow: The Braid Agent Lifecycle
+- **Security**: Non-root containers, secret management, network isolation
+- **Monitoring**: Health checks, metrics collection, error tracking
+- **Scalability**: Kubernetes support, resource optimization, auto-scaling ready
+- **Reliability**: Circuit breakers, retry logic, graceful degradation
+- **Observability**: LangSmith integration, detailed tracing, performance monitoring
 
-Braid offers two pathways for building agents: **rapid prototyping** or **production-ready development**. Choose the approach that best fits your needs.
+---
 
-### Quick Start: Simple Agents
-
-For rapid prototyping and simple automations:
-
-```bash
-# Example: Create a basic agent for quick testing
-braid new sales-prep-agent --tools gworkspace,slack
-```
-
-This creates a lightweight structure with:
-- `agent.py`: Single file for your agent logic
-- `tools/`: Tool implementations  
-- `requirements.txt`: Dependencies
-
-Perfect for fast iteration: `python agent.py` to test immediately.
-
-### Recommended: Production-Ready Agents
-
-For professional development and deployment-ready agents:
-
-```bash
-# Example: Create a production-ready agent
-braid new sales-intelligence-agent --production --tools csv,files,http,slack,gworkspace --description "Sales intelligence agent that analyzes data and provides insights"
-```
-
-This creates a complete production structure:
-
-```
-sales-intelligence-agent/
-├── README.md                  # Complete documentation
-├── pyproject.toml            # Modern Python packaging
-├── Makefile                  # Development commands
-├── langgraph.json           # LangGraph Studio integration
-├── .env.example             # Environment configuration
-├── LICENSE                  # MIT license
-├── src/
-│   └── sales_intelligence_agent/
-│       ├── __init__.py
-│       ├── configuration.py  # Agent configuration
-│       ├── graph.py         # Main LangGraph definition  
-│       ├── prompts.py       # System prompts
-│       ├── state.py         # Agent state management
-│       ├── tools.py         # Tool orchestration
-│       ├── utils.py         # Utility functions
-│       └── [tool_files].py  # Individual tool implementations
-└── tests/
-    ├── unit_tests/          # Unit test suite
-    └── integration_tests/   # Integration test suite
-```
-
-**Get started immediately:**
-```bash
-cd sales-intelligence-agent
-pip install -e '.[dev]'
-cp .env.example .env          # Add your API keys
-make test                     # Verify everything works
-python src/sales_intelligence_agent/graph.py  # Run your agent
-```
-
-**Development commands:**
-```bash
-make test                     # Run unit tests
-make integration_tests        # Run integration tests  
-make lint                     # Code quality checks
-make format                   # Auto-format code
-```
-
-### Stage 2: Package for Deployment
-
-When ready to deploy, package your agent with enhanced production features:
-
-```bash
-# Basic packaging (works with both simple and production structures)
-braid package
-
-# Production-optimized packaging with security and monitoring
-braid package --production
-
-# Include Kubernetes manifests for container orchestration
-braid package --production --platform kubernetes
-```
-
-**What you get:**
-- Multi-stage Docker builds for optimized images
-- Security-hardened containers (non-root user, health checks)
-- Production `docker-compose.yml` with monitoring setup
-- Comprehensive deployment documentation (`DEPLOYMENT.md`)
-- Optional Kubernetes manifests for scalable deployment
-
-**Test locally:**
-```bash
-docker compose up --build
-```
-
-**Deploy to production:**
-```bash
-# Build and push to registry
-docker build -t your-registry.com/agent:latest .build/
-docker push your-registry.com/agent:latest
-
-# Deploy with Kubernetes (if using K8s option)
-kubectl apply -f k8s/
-```
+**🚀 Ready to build sophisticated AI agents?** Start by asking Claude Code to prepare for agent development, then describe what you want to build.
