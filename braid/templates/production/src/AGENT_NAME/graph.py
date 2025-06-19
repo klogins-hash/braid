@@ -1,4 +1,11 @@
-"""Main graph definition for the {AGENT_NAME} agent."""
+"""Main graph definition for the {AGENT_NAME} agent.
+
+IMPORTANT: This template uses proper LangSmith tracing architecture to ensure
+unified workflow traces instead of isolated tool call events.
+
+For custom workflow agents, consider using the langsmith-traced-agent template
+which provides more control over step-by-step execution.
+"""
 
 import logging
 from typing import Dict, List
@@ -43,7 +50,8 @@ def create_agent_graph():
         
         return {"messages": [response]}
     
-    # Build graph
+    # Build graph with proper LangSmith tracing
+    # This assistant → tools → assistant flow ensures unified traces
     builder = StateGraph(AgentState)
     builder.add_node("assistant", agent_node)
     
@@ -51,7 +59,7 @@ def create_agent_graph():
         builder.add_node("tools", tool_node)
         builder.add_edge(START, "assistant")
         builder.add_conditional_edges("assistant", tools_condition)
-        builder.add_edge("tools", "assistant")
+        builder.add_edge("tools", "assistant")  # Creates unified trace flow
     else:
         builder.add_edge(START, "assistant")
     

@@ -2,6 +2,23 @@
 
 This guide provides a checklist of essential steps and best practices to follow when creating a new agent. Following these steps will help you avoid the common bugs and configuration issues we discovered.
 
+## 🚨 CRITICAL: LangSmith Tracing Architecture
+
+- [ ] **Use Proper LangGraph Tool Flow**: Always route tool calls through LangGraph nodes to ensure unified tracing.
+  ```python
+  # ❌ WRONG - Creates isolated traces
+  result = my_tool.invoke({'param': 'value'})
+  
+  # ✅ CORRECT - Creates unified trace
+  # Let LLM make tool calls through model.bind_tools()
+  # Execute tools in tool_node with ToolMessage responses
+  ```
+- [ ] **Create ToolMessage Responses**: Tool execution must create `ToolMessage` objects with matching `tool_call_id`.
+- [ ] **Follow Agent → Tools → Agent Pattern**: Build LangGraph with proper routing for unified traces.
+- [ ] **Use LangSmith Traced Agent Template**: Reference `/templates/langsmith-traced-agent/` for correct implementation.
+
+**Why This Matters**: Direct `tool.invoke()` calls bypass LangGraph tracing, causing tool calls to appear as isolated events instead of unified workflow traces in LangSmith.
+
 ### 1. Environment & Dependencies
 
 - [ ] **Activate Virtual Environment**: Always start by activating the project's virtual environment from the project root.
