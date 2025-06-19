@@ -16,49 +16,163 @@ You cannot improve what you cannot see. Observability is the practice of instrum
 
 ### 🚨 **CRITICAL: LangSmith Tracing Architecture**
 
-**COMMON ISSUE**: Tool calls appear as isolated events instead of unified workflow traces.
+**ISSUE**: Tool calls appear as isolated events instead of unified workflow traces.
+
+**SYMPTOM**: In LangSmith dashboard, each tool call shows as separate isolated event rather than part of a waterfall workflow. Impossible to trace end-to-end agent execution.
 
 **ROOT CAUSE**: Direct `tool.invoke()` calls bypass LangGraph's tracing system.
 
-**SOLUTION**: Always route tool calls through LangGraph nodes:
-
+**REAL EXAMPLE FROM PRODUCTION**:
 ```python
-# ❌ WRONG - Creates isolated traces
+# ❌ WRONG - This creates isolated traces (discovered in financial forecasting agent)
 def run_workflow():
+    # Each of these appears as separate, isolated event in LangSmith
     client_info = get_client_information.invoke({'user_id': 'user_123'})
-    forecast = calculate_forecast.invoke({'data': client_info})
-    
-# ✅ CORRECT - Creates unified trace  
-def agent_node(state: dict) -> dict:
-    """Agent makes tool calls through LangGraph."""
-    response = model.invoke(messages)  # Model decides which tools to call
-    return {"messages": messages + [response]}
-
-def tool_node(state: dict) -> dict:
-    """Execute tools and create ToolMessage responses."""
-    last_message = state["messages"][-1]
-    tool_messages = []
-    
-    for tool_call in last_message.tool_calls:
-        result = tool_map[tool_call['name']].invoke(tool_call['args'])
-        tool_messages.append(ToolMessage(
-            content=str(result),
-            tool_call_id=tool_call['id']
-        ))
-    
-    return {"messages": state["messages"] + tool_messages}
-
-# Build graph: agent → tools → agent (creates unified trace)
-builder.add_node("agent", agent_node)
-builder.add_node("tools", tool_node)
-builder.add_conditional_edges("agent", lambda s: "tools" if has_tool_calls(s) else END)
-builder.add_edge("tools", "agent")
+    xero_data = get_live_xero_data.invoke({'user_id': 'user_123'}) 
+    market_research = get_market_research.invoke({'industry': 'tech'})
+    forecast = calculate_forecast.invoke({'data': xero_data})
+    # No way to see these as connected workflow
 ```
 
-**KEY REQUIREMENTS**:
-1. Tool calls must be made by the LLM through `model.bind_tools()`
-2. Tool responses must be `ToolMessage` objects with matching `tool_call_id`
-3. All execution must flow through LangGraph nodes for unified tracing
+**✅ SOLUTION**: Proper agent → tools → agent flow with unified tracing:
+
+```python
+def create_traced_agent():
+    """Create agent with proper LangSmith tracing architecture."""
+    tools = [get_client_information, get_live_xero_data, get_market_research, calculate_forecast]
+    tool_map = {tool.name: tool for tool in tools}
+    
+    model = ChatOpenAI(model="gpt-4o", temperature=0.1)
+    model = model.bind_tools(tools)  # Crucial: bind tools to model
+    
+    def agent_node(state: dict) -> dict:
+        """Agent node that makes tool calls through LangGraph."""
+        user_id = state.get("user_id", "user_123")
+        step = state.get("step", 1)
+        messages = state.get("messages", [])
+        
+        if step == 1:
+            prompt = f"Get client information for user {user_id} using get_client_information tool."
+        elif step == 2:
+            prompt = f"Get live Xero data using get_live_xero_data tool."
+        # ... more steps
+        
+        new_message = HumanMessage(content=prompt)
+        updated_messages = messages + [new_message]
+        
+        # LLM decides which tools to call - this creates unified trace
+        response = model.invoke(updated_messages)
+        updated_messages.append(response)
+        
+        return {
+            **state,
+            "messages": updated_messages,
+            "step": step
+        }
+    
+    def tool_node(state: dict) -> dict:
+        """Execute tools and create ToolMessage responses."""
+        messages = state.get("messages", [])
+        step = state.get("step", 1)
+        
+        last_message = messages[-1]
+        
+        if not hasattr(last_message, 'tool_calls') or not last_message.tool_calls:
+            return state
+        
+        # Execute each tool call and create ToolMessage
+        tool_messages = []
+        for tool_call in last_message.tool_calls:
+            tool_name = tool_call['name']
+            tool_args = tool_call['args']
+            tool_call_id = tool_call['id']
+            
+            print(f"🔧 Executing {tool_name} with args: {tool_args}")
+            
+            try:
+                # Execute the tool
+                result = tool_map[tool_name].invoke(tool_args)
+                
+                # Create ToolMessage with matching tool_call_id (CRITICAL)
+                tool_message = ToolMessage(
+                    content=str(result),
+                    tool_call_id=tool_call_id
+                )
+                tool_messages.append(tool_message)
+                
+                print(f"✅ {tool_name} completed successfully")
+                
+            except Exception as e:
+                print(f"❌ Error executing {tool_name}: {e}")
+                error_message = ToolMessage(
+                    content=f"Error: {str(e)}",
+                    tool_call_id=tool_call_id
+                )
+                tool_messages.append(error_message)
+        
+        # Add tool messages to conversation
+        updated_messages = messages + tool_messages
+        
+        # Move to next step after tool execution
+        next_step = step + 1 if step < 5 else step
+        
+        return {
+            **state,
+            "messages": updated_messages,
+            "step": next_step
+        }
+    
+    def should_continue(state: dict) -> str:
+        """Router function for proper trace flow."""
+        messages = state.get("messages", [])
+        completed = state.get("completed", False)
+        
+        if completed:
+            return END
+        
+        # Check if last message has tool calls
+        if messages:
+            last_message = messages[-1]
+            if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                return "tools"
+        
+        # Continue to agent for next step
+        return "agent"
+    
+    # Build the LangGraph with proper routing
+    builder = StateGraph(dict)
+    builder.add_node("agent", agent_node)
+    builder.add_node("tools", tool_node)
+    
+    # Add edges for unified tracing
+    builder.add_edge(START, "agent")
+    builder.add_conditional_edges("agent", should_continue)
+    builder.add_conditional_edges("tools", should_continue)
+    
+    return builder.compile()
+
+# Execute with proper configuration
+agent = create_traced_agent()
+result = agent.invoke(
+    {"messages": [HumanMessage(content="Run financial forecast")], "user_id": "user_123"},
+    config={"recursion_limit": 50}
+)
+```
+
+**CRITICAL REQUIREMENTS FOR UNIFIED TRACING**:
+1. **Bind tools to model**: `model = model.bind_tools(tools)` 
+2. **ToolMessage responses**: Must include exact `tool_call_id` from tool call
+3. **Model decides tools**: Let LLM choose tools, don't call `tool.invoke()` directly
+4. **Proper routing**: Use conditional edges for agent → tools → agent flow
+5. **State management**: Pass all needed data through graph state
+
+**VERIFICATION**: In LangSmith dashboard, you should see:
+- One unified workflow run (not isolated events)
+- Tool calls nested under LLM calls in waterfall view
+- Complete trace showing agent → tools → agent flow
+- All tool executions connected to parent workflow
+
+**THIS PATTERN PREVENTS**: Isolated tool calls, broken traces, inability to debug workflows
 
 ## 2. Rigorous Evaluation
 
