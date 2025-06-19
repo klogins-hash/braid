@@ -28,13 +28,14 @@ When creating MCP-enabled agents, **ALWAYS** read these files in this order:
 
 | Server | Tools | Use Cases | Status |
 |--------|-------|-----------|---------|
-| **Perplexity** | 3 tools | Real-time web research, market analysis | ✅ Ready |
 | **Xero** | 50+ tools | Financial reports, accounting data | ✅ Ready |
 | **Notion** | 19+ tools | Knowledge management, documentation | ✅ Ready |
 | **MongoDB** | Various | Database operations | 🔄 In Development |
 | **AgentQL** | Various | Web automation | 🔄 In Development |
 | **AlphaVantage** | Various | Financial market data | 🔄 In Development |
 | **Twilio** | Various | SMS, voice messaging | 🔄 In Development |
+
+**Note**: Perplexity is now available as a direct API integration in `core/integrations/perplexity/` rather than as an MCP server.
 
 ## 🛠️ MCP Integration Architecture
 
@@ -103,17 +104,19 @@ braid/
 
 ### Financial Analysis Agents
 - **Primary MCP**: Xero (50+ financial tools)
-- **Secondary MCPs**: Perplexity (research), Notion (reporting)
+- **Secondary MCPs**: Notion (reporting)
+- **Direct Integrations**: Perplexity (research via `core/integrations/perplexity/`)
 - **Template**: Use `templates/mcp-agent/` as base
 
 ### Research and Content Agents  
-- **Primary MCP**: Perplexity (web research)
-- **Secondary MCPs**: Notion (documentation), MongoDB (data storage)
+- **Primary MCPs**: Notion (documentation), MongoDB (data storage)
+- **Direct Integrations**: Perplexity (web research via `core/integrations/perplexity/`)
 - **Pattern**: Research → Analyze → Document → Store
 
 ### Business Process Agents
 - **Primary MCPs**: Xero (financial), Notion (workflow)
-- **Secondary MCPs**: Twilio (notifications), Perplexity (market data)
+- **Secondary MCPs**: Twilio (notifications)
+- **Direct Integrations**: Perplexity (market data via `core/integrations/perplexity/`)
 - **Pattern**: Monitor → Process → Report → Notify
 
 ## 🧪 Testing and Validation
@@ -140,9 +143,9 @@ python -c "
 from dotenv import load_dotenv
 import os
 load_dotenv()
-print('Perplexity:', bool(os.getenv('PERPLEXITY_API_KEY')))
-print('Xero:', bool(os.getenv('XERO_ACCESS_TOKEN')))
-print('Notion:', bool(os.getenv('NOTION_API_KEY')))
+print('Perplexity (Direct Integration):', bool(os.getenv('PERPLEXITY_API_KEY')))
+print('Xero (MCP):', bool(os.getenv('XERO_ACCESS_TOKEN')))
+print('Notion (MCP):', bool(os.getenv('NOTION_API_KEY')))
 "
 ```
 
@@ -189,8 +192,9 @@ kubectl apply -f k8s/mcp-deployment.yaml
 # Enable verbose logging
 DEBUG=mcp:* python your_agent.py
 
-# Test individual MCP servers
-python tests/mcp_test_framework.py --server perplexity
+# Test individual MCP servers  
+python tests/mcp_test_framework.py --server xero
+python tests/mcp_test_framework.py --server notion
 
 # Check agent MCP integration
 python templates/mcp-agent/test_agent.py --test-tools

@@ -151,13 +151,6 @@ class MCPManager:
     
     def setup_clients(self):
         """Setup MCP clients based on available environment variables."""
-        # Setup Perplexity MCP
-        if os.getenv('PERPLEXITY_API_KEY'):
-            self.clients['perplexity'] = MCPClient(
-                server_path="node",
-                server_args=["mcp_servers/perplexity/perplexity-ask/dist/index.js"],
-                env_vars={"PERPLEXITY_API_KEY": os.getenv('PERPLEXITY_API_KEY')}
-            )
         
         # Setup Xero MCP
         if os.getenv('XERO_ACCESS_TOKEN'):
@@ -210,29 +203,6 @@ class MCPManager:
 mcp_manager = MCPManager()
 
 # Define MCP-powered tools
-@tool
-def web_research(query: str) -> str:
-    """Perform real-time web research using Perplexity MCP.
-    
-    Args:
-        query: The research question or topic to investigate
-        
-    Returns:
-        Research results with citations
-    """
-    perplexity_client = mcp_manager.get_client('perplexity')
-    if not perplexity_client:
-        return "Perplexity MCP not available"
-    
-    result = perplexity_client.call_tool("perplexity_research", {
-        "messages": [{"role": "user", "content": query}]
-    })
-    
-    if "content" in result:
-        return result["content"][0].get("text", "No content returned")
-    else:
-        return f"Research failed: {result.get('error', 'Unknown error')}"
-
 @tool
 def get_financial_data(report_type: str = "profit_and_loss") -> str:
     """Get financial data from Xero accounting system.
@@ -340,7 +310,7 @@ llm = ChatOpenAI(
 def agent_node(state: AgentState) -> AgentState:
     """Main agent reasoning node."""
     # Bind tools to the LLM
-    tools = [web_research, get_financial_data, create_notion_page, search_notion_workspace]
+    tools = [get_financial_data, create_notion_page, search_notion_workspace]
     llm_with_tools = llm.bind_tools(tools)
     
     # Get the latest message
@@ -371,7 +341,7 @@ def create_agent_graph():
     
     # Add nodes
     workflow.add_node("agent", agent_node)
-    workflow.add_node("tools", ToolNode([web_research, get_financial_data, create_notion_page, search_notion_workspace]))
+    workflow.add_node("tools", ToolNode([get_financial_data, create_notion_page, search_notion_workspace]))
     workflow.add_node("final_response", final_response_node)
     
     # Define edges
@@ -478,7 +448,6 @@ class MCPAgent:
         print("  status   - Show MCP server status")
         print("  quit     - Exit the agent")
         print("\n🔧 Available Capabilities:")
-        print("  📊 Web research via Perplexity MCP")
         print("  💰 Financial data via Xero MCP")
         print("  📝 Notion workspace management")
         print("\n💡 Example queries:")

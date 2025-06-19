@@ -1,11 +1,5 @@
 {
   "mcp_servers": {
-    "perplexity": {
-      "path": "mcp_servers/perplexity/perplexity-ask/dist/index.js",
-      "env_vars": ["PERPLEXITY_API_KEY"],
-      "required": true,
-      "test_tools": ["perplexity_ask", "perplexity_research"]
-    },
     "xero": {
       "path": "mcp_servers/xero/dist/index.js", 
       "env_vars": ["XERO_ACCESS_TOKEN", "XERO_CLIENT_ID", "XERO_CLIENT_SECRET"],
@@ -35,7 +29,6 @@
   "agent_test_queries": [
     "Hello, can you help me?",
     "What's the current date?",
-    "Research the latest technology trends",
     "Get financial data for analysis",
     "Create a simple report"
   ]

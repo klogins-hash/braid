@@ -93,20 +93,6 @@ class AgentTester:
                 print("❌ Could not start agent for tool testing")
                 return {}
             
-            # Test web research (if Perplexity is available)
-            if 'perplexity' in mcp_manager.clients:
-                print("📋 Testing web research tool...")
-                try:
-                    response = agent.run("Research the weather today")
-                    if response and "error" not in response.lower():
-                        print("✅ Web research tool working")
-                        tool_results["web_research"] = True
-                    else:
-                        print("❌ Web research tool failed")
-                        tool_results["web_research"] = False
-                except Exception as e:
-                    print(f"❌ Web research test error: {e}")
-                    tool_results["web_research"] = False
             
             # Test financial data (if Xero is available)
             if 'xero' in mcp_manager.clients:
@@ -156,7 +142,6 @@ class AgentTester:
         # Check required environment variables
         required_vars = [
             "OPENAI_API_KEY",
-            "PERPLEXITY_API_KEY", 
             "XERO_ACCESS_TOKEN",
             "NOTION_API_KEY"
         ]

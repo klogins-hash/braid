@@ -60,9 +60,6 @@ validate_env_vars() {
     fi
     
     # MCP-specific variables
-    if [ -z "$PERPLEXITY_API_KEY" ]; then
-        missing_vars+=("PERPLEXITY_API_KEY")
-    fi
     
     if [ -z "$XERO_ACCESS_TOKEN" ]; then
         missing_vars+=("XERO_ACCESS_TOKEN")
@@ -94,9 +91,6 @@ OPENAI_API_KEY=your_openai_key_here
 LANGCHAIN_API_KEY=your_langsmith_key_here
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=your_project_name
-
-# Perplexity MCP (Required for web research)
-PERPLEXITY_API_KEY=your_perplexity_key_here
 
 # Xero MCP (Required for financial data)
 XERO_ACCESS_TOKEN=your_xero_bearer_token_here
@@ -182,14 +176,6 @@ clone_mcp_repositories() {
     
     cd "$MCP_SERVERS_DIR"
     
-    # Clone Perplexity MCP
-    if [ ! -d "perplexity" ]; then
-        print_status "Cloning Perplexity MCP..."
-        git clone https://github.com/ppl-ai/modelcontextprotocol.git perplexity
-    else
-        print_status "Perplexity MCP already exists, updating..."
-        cd perplexity && git pull && cd ..
-    fi
     
     # Clone Xero MCP
     if [ ! -d "xero" ]; then
@@ -219,16 +205,6 @@ install_dependencies() {
     
     cd "$MCP_SERVERS_DIR"
     
-    # Install Perplexity MCP dependencies
-    print_status "Installing Perplexity MCP dependencies..."
-    cd perplexity/perplexity-ask
-    npm install > ../../logs/mcp/perplexity_install.log 2>&1
-    if [ $? -eq 0 ]; then
-        print_status "Perplexity MCP dependencies installed"
-    else
-        print_error "Failed to install Perplexity MCP dependencies. Check logs/mcp/perplexity_install.log"
-    fi
-    cd ../..
     
     # Install Xero MCP dependencies
     print_status "Installing Xero MCP dependencies..."
@@ -262,7 +238,6 @@ generate_startup_scripts() {
     print_section "Generating MCP Server Startup Scripts"
     
     # Generate individual server scripts
-    generate_perplexity_script
     generate_xero_script
     generate_notion_script
     generate_master_script
@@ -272,34 +247,6 @@ generate_startup_scripts() {
     chmod +x "$SCRIPTS_DIR"/*.sh
     
     print_status "Startup scripts generated and made executable"
-}
-
-# Generate Perplexity startup script
-generate_perplexity_script() {
-    cat > "$SCRIPTS_DIR/start_perplexity_mcp.sh" << 'EOF'
-#!/bin/bash
-# Start Perplexity MCP Server
-
-echo "📊 Starting Perplexity MCP Server..."
-
-# Load environment variables
-if [ -f .env ]; then
-    source .env
-fi
-
-# Check for API key
-if [ -z "$PERPLEXITY_API_KEY" ]; then
-    echo "❌ PERPLEXITY_API_KEY not set"
-    exit 1
-fi
-
-# Start server
-cd mcp_servers/perplexity/perplexity-ask
-PERPLEXITY_API_KEY=$PERPLEXITY_API_KEY node dist/index.js 2>&1 | tee ../../../logs/mcp/perplexity.log &
-PID=$!
-echo $PID > ../../../logs/mcp/perplexity.pid
-echo "✅ Perplexity MCP started with PID: $PID"
-EOF
 }
 
 # Generate Xero startup script
@@ -383,12 +330,6 @@ mkdir -p logs/mcp
 # Start servers based on available API keys
 STARTED_SERVERS=()
 
-if [ ! -z "$PERPLEXITY_API_KEY" ]; then
-    ./scripts/start_perplexity_mcp.sh
-    STARTED_SERVERS+=("perplexity")
-    sleep 2
-fi
-
 if [ ! -z "$XERO_ACCESS_TOKEN" ]; then
     ./scripts/start_xero_mcp.sh
     STARTED_SERVERS+=("xero")
@@ -456,13 +397,11 @@ stop_server() {
 }
 
 # Stop individual servers
-stop_server "perplexity"
 stop_server "xero"
 stop_server "notion"
 
 # Kill any remaining node processes that might be MCP servers
 echo "🧹 Cleaning up any remaining MCP processes..."
-pkill -f "perplexity.*dist/index.js" 2>/dev/null || true
 pkill -f "xero.*dist/index.js" 2>/dev/null || true
 pkill -f "notion.*bin/cli.mjs" 2>/dev/null || true
 
@@ -584,16 +523,6 @@ class MCPConnectionTester:
         
         results = {}
         
-        # Test Perplexity MCP
-        if os.getenv('PERPLEXITY_API_KEY'):
-            results['perplexity'] = self.test_server_connection(
-                "Perplexity",
-                "mcp_servers/perplexity/perplexity-ask/dist/index.js",
-                {"PERPLEXITY_API_KEY": os.getenv('PERPLEXITY_API_KEY')}
-            )
-        else:
-            print("\n⏭️  Skipping Perplexity MCP (no API key)")
-            results['perplexity'] = None
         
         # Test Xero MCP
         if os.getenv('XERO_ACCESS_TOKEN'):

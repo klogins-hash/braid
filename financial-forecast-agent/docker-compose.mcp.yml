@@ -30,34 +30,6 @@ services:
     networks:
       - mcp-network
 
-  # Perplexity MCP Server  
-  perplexity-mcp:
-    image: node:18-slim
-    container_name: perplexity-mcp-server
-    ports:
-      - "3003:3003"
-    environment:
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
-      - NODE_ENV=production
-      - MCP_PORT=3003
-    volumes:
-      - ./perplexity-cache:/app/cache
-    working_dir: /app
-    restart: unless-stopped
-    command: >
-      sh -c "
-        npm init -y &&
-        npx -y server-perplexity-ask
-      "
-    healthcheck:
-      test: ["CMD", "node", "-e", "process.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    networks:
-      - mcp-network
-
   # Notion MCP Server
   notion-mcp:
     image: node:18-slim
@@ -95,7 +67,6 @@ services:
     environment:
       - NODE_ENV=production
       - XERO_MCP_URL=http://xero-mcp:3002
-      - PERPLEXITY_MCP_URL=http://perplexity-mcp:3003
       - NOTION_MCP_URL=http://notion-mcp:3001
     working_dir: /app
     restart: unless-stopped
@@ -113,7 +84,6 @@ services:
           status: 'healthy',
           services: {
             xero: process.env.XERO_MCP_URL,
-            perplexity: process.env.PERPLEXITY_MCP_URL,
             notion: process.env.NOTION_MCP_URL
           }
         }));
@@ -123,7 +93,6 @@ services:
       "
     depends_on:
       - xero-mcp
-      - perplexity-mcp  
       - notion-mcp
     networks:
       - mcp-network
@@ -135,5 +104,4 @@ networks:
 
 volumes:
   xero-cache:
-  perplexity-cache:
   notion-cache:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Financial Forecasting Agent with MCP Integration
-6-step workflow: Xero Data → Client Info → Market Research → Assumptions → Forecast → Notion Report
+Enhanced Financial Forecasting Agent with SQL Database and Python Forecasting Tools
+Complete 6-step workflow with iterative feedback and proper state management
 """
 
 import os
@@ -13,21 +13,36 @@ import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Core imports
 from dotenv import load_dotenv
 from langchain.tools import tool
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, START, END
+# from langgraph.prebuilt import ToolNode  # Not available in this version
 from pydantic import BaseModel
 
 # Load environment variables and configuration
 load_dotenv()
 from config import config
+
+# Import our new tools
+from tools.sql_tools import (
+    store_xero_data_to_sql, 
+    get_client_info_from_sql, 
+    get_historical_data_from_sql,
+    store_forecast_assumptions_sql, 
+    store_forecast_results_sql, 
+    approve_forecast_sql,
+    store_notion_report_sql
+)
+from tools.forecast_tools import (
+    generate_forecast_assumptions_with_ai,
+    calculate_financial_forecast_python,
+    validate_and_review_forecast,
+    generate_forecast_scenarios,
+    calculate_key_financial_metrics
+)
 
 # Configure logging
 config.setup_logging()
@@ -108,7 +123,7 @@ class MCPClient:
         
         request = {
             "jsonrpc": "2.0",
-            "id": datetime.now().microsecond,  # Unique ID
+            "id": datetime.now().microsecond,
             "method": method,
             "params": params or {}
         }
@@ -159,8 +174,6 @@ class MCPManager:
     
     def setup_clients(self):
         """Setup MCP clients based on available environment variables."""
-        # Note: Perplexity uses direct API calls instead of MCP
-        
         # Setup Xero MCP for financial data
         if config.XERO_ACCESS_TOKEN:
             self.clients['xero'] = MCPClient(
@@ -211,40 +224,27 @@ class MCPManager:
 # Global MCP manager
 mcp_manager = MCPManager()
 
-# Agent state definition
-class ForecastAgentState(BaseModel):
-    """State for the financial forecasting agent."""
+# Enhanced agent state with proper data flow
+class EnhancedForecastState(BaseModel):
+    """Enhanced state for the financial forecasting agent with proper data tracking."""
     messages: List[Any] = []
     current_step: str = "start"
     user_id: str = "user_123"
-    xero_data: Optional[Dict] = None
-    client_info: Optional[Dict] = None
-    market_research: Optional[str] = None
-    forecast_assumptions: Optional[Dict] = None
-    forecast_results: Optional[Dict] = None
-    notion_report_url: Optional[str] = None
+    step_data: Dict[str, Any] = {}
+    assumptions_id: Optional[int] = None
     workflow_complete: bool = False
     
     class Config:
         arbitrary_types_allowed = True
 
-# Define MCP-powered tools for financial forecasting
+# MCP-powered tools (existing)
 @tool
 def get_xero_financial_data(report_type: str = "profit_and_loss", user_id: str = "user_123") -> str:
-    """Retrieve financial data from Xero MCP server.
-    
-    Args:
-        report_type: Type of financial report (profit_and_loss, balance_sheet, trial_balance)
-        user_id: User identifier for the forecast
-        
-    Returns:
-        Financial data in structured format
-    """
+    """Retrieve financial data from Xero MCP server."""
     xero_client = mcp_manager.get_client('xero')
     if not xero_client:
         return "Xero MCP not available - using simulated data for testing"
     
-    # Map report types to Xero MCP tool names
     tool_mapping = {
         "profit_and_loss": "list-profit-and-loss",
         "balance_sheet": "list-balance-sheet",
@@ -261,106 +261,64 @@ def get_xero_financial_data(report_type: str = "profit_and_loss", user_id: str =
             return json.dumps(result, indent=2)
         else:
             logger.warning(f"⚠️ Xero MCP error, using simulated data: {result}")
-            return f"Simulated {report_type} data for {user_id}: Revenue growth 15%, expenses stable"
+            return f"Simulated {report_type} data for {user_id}: Revenue $1M, COGS $350K, OpEx $420K, Net Income $120K"
     except Exception as e:
         logger.error(f"❌ Xero MCP call failed: {e}")
         return f"Error retrieving Xero data, using simulated data for {user_id}"
 
 @tool
 def conduct_market_research(industry: str = "Software Development", location: str = "San Francisco, CA") -> str:
-    """Conduct market research using Perplexity integration.
+    """Conduct market research using Perplexity API."""
+    perplexity_key = config.PERPLEXITY_API_KEY
     
-    Args:
-        industry: Industry to research
-        location: Geographic location for market analysis
-        
-    Returns:
-        Market research insights and trends
-    """
+    if not perplexity_key:
+        logger.warning("⚠️ Perplexity API key not available, using simulated data")
+        return f"Simulated market research: {industry} in {location} showing 12% annual growth with strong digital transformation trends"
+    
     try:
-        # Import Perplexity integration from core
-        from core.integrations.perplexity.tools import perplexity_market_research
+        import requests
         
         logger.info(f"🔍 Getting live market research for {industry} in {location}...")
         
-        # Use the new Perplexity integration
-        result = perplexity_market_research(industry=industry, location=location, timeframe="5 years")
+        url = "https://api.perplexity.ai/chat/completions"
         
-        if result.startswith("Error:"):
-            logger.warning(f"⚠️ Perplexity API error: {result}")
-            return f"Simulated market research: {industry} in {location} showing 12% annual growth with strong digital transformation trends"
+        headers = {
+            "Authorization": f"Bearer {perplexity_key}",
+            "Content-Type": "application/json"
+        }
         
-        logger.info("✅ Live market research completed")
-        return result
+        prompt = f"""Provide market analysis for the {industry} industry in {location}. Include:
+1. Industry growth outlook for next 5 years
+2. Key market trends and drivers  
+3. Revenue growth expectations
+4. Risk factors
+
+Keep it concise (3-4 sentences)."""
+
+        data = {
+            "model": "llama-3.1-sonar-large-128k-online",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.1
+        }
         
-    except ImportError as e:
-        logger.warning(f"⚠️ Perplexity integration not available: {e}")
-        return f"Simulated market research: {industry} in {location} showing 12% annual growth with strong digital transformation trends"
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            market_analysis = result['choices'][0]['message']['content']
+            logger.info("✅ Live market research completed")
+            return market_analysis
+        else:
+            logger.warning(f"⚠️ Perplexity API error: {response.status_code}")
+            return f"Market analysis for {industry} in {location}: API request failed, using estimated 15-25% growth"
+            
     except Exception as e:
         logger.error(f"❌ Market research error: {e}")
         return f"Market analysis for {industry} in {location}: Error occurred, using estimated 15-25% growth"
 
 @tool
-def create_forecast_assumptions(historical_data: str, market_research: str, client_info: str) -> str:
-    """Generate forecast assumptions based on historical data and market research.
-    
-    Args:
-        historical_data: Historical financial data from Xero
-        market_research: Market insights from research
-        client_info: Client business information
-        
-    Returns:
-        Structured forecast assumptions
-    """
-    assumptions = {
-        "revenue_growth_rate": "15%",
-        "cost_of_goods_sold": "35%",
-        "operating_expense_growth": "8%",
-        "tax_rate": "25%",
-        "depreciation_rate": "10%",
-        "market_factors": "Positive growth outlook based on industry trends",
-        "risk_factors": "Economic uncertainty, competition, technology changes",
-        "growth_drivers": "Digital transformation, market expansion, new products"
-    }
-    
-    logger.info("✅ Generated forecast assumptions")
-    return json.dumps(assumptions, indent=2)
-
-@tool  
-def calculate_financial_forecast(historical_data: str, assumptions: str) -> str:
-    """Calculate 5-year financial forecast using historical data and assumptions.
-    
-    Args:
-        historical_data: Historical financial data
-        assumptions: Forecast assumptions
-        
-    Returns:
-        5-year financial projections
-    """
-    # Simplified forecast calculation for demo
-    forecast = {
-        "year_1": {"revenue": 1150000, "expenses": 920000, "net_income": 230000},
-        "year_2": {"revenue": 1322500, "expenses": 1057600, "net_income": 264900},
-        "year_3": {"revenue": 1520875, "experiences": 1214208, "net_income": 306667},
-        "year_4": {"revenue": 1749006, "expenses": 1399205, "net_income": 349801},
-        "year_5": {"revenue": 2011357, "expenses": 1609086, "net_income": 402271}
-    }
-    
-    logger.info("✅ Calculated 5-year financial forecast")
-    return json.dumps(forecast, indent=2)
-
-@tool
-def create_notion_report(forecast_data: str, assumptions: str, market_research: str) -> str:
-    """Create comprehensive financial forecast report in Notion.
-    
-    Args:
-        forecast_data: Financial forecast results
-        assumptions: Forecast assumptions
-        market_research: Market research insights
-        
-    Returns:
-        Notion page URL or confirmation
-    """
+def create_notion_report(forecast_data: str, assumptions: str, market_research: str, assumptions_id: str) -> str:
+    """Create comprehensive financial forecast report in Notion."""
     notion_client = mcp_manager.get_client('notion')
     if not notion_client:
         return "Notion MCP not available - report content generated for local use"
@@ -369,10 +327,7 @@ def create_notion_report(forecast_data: str, assumptions: str, market_research: 
     report_content = f"""# Financial Forecast Report
 
 ## Executive Summary
-5-year financial forecast showing strong growth trajectory with 15% annual revenue growth.
-
-## Historical Analysis
-{forecast_data}
+5-year financial forecast showing projected growth trajectory based on data-driven assumptions.
 
 ## Market Research Insights
 {market_research}
@@ -381,13 +336,12 @@ def create_notion_report(forecast_data: str, assumptions: str, market_research: 
 {assumptions}
 
 ## Forecast Results
-Detailed 5-year projections with scenario analysis.
+{forecast_data}
 
 Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
     
     try:
-        # Use default parent page ID from config
         parent_page_id = config.NOTION_DEFAULT_PAGE_ID or 'default-page-id'
         
         result = notion_client.call_tool("API-post-page", {
@@ -409,31 +363,6 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         logger.error(f"❌ Notion MCP call failed: {e}")
         return f"Report content generated locally: {report_content[:200]}..."
 
-@tool
-def get_client_information(user_id: str = "user_123") -> str:
-    """Get client business information for forecasting.
-    
-    Args:
-        user_id: User identifier
-        
-    Returns:
-        Client business information
-    """
-    # Simulated client data - in production this would come from a database
-    client_info = {
-        "user_id": user_id,
-        "company_name": "Northeast Logistics Co",
-        "industry": "Software Development",
-        "business_age": "5 years",
-        "location": "San Francisco, CA",
-        "business_strategy": "Aggressive growth through digital transformation",
-        "employees": 25,
-        "current_revenue": "1M annually"
-    }
-    
-    logger.info(f"✅ Retrieved client information for {user_id}")
-    return json.dumps(client_info, indent=2)
-
 # Initialize LLM
 llm = ChatOpenAI(
     model="gpt-4",
@@ -441,13 +370,12 @@ llm = ChatOpenAI(
     api_key=config.OPENAI_API_KEY
 )
 
-# Financial Forecasting Agent
-class FinancialForecastAgent:
-    """6-step financial forecasting agent with MCP integration."""
+class EnhancedFinancialForecastAgent:
+    """Enhanced 6-step financial forecasting agent with SQL integration and Python forecasting."""
     
     def __init__(self):
-        self.graph = self.create_agent_graph()
         self.setup_signal_handlers()
+        self.graph = self.create_enhanced_workflow()
     
     def setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown."""
@@ -461,163 +389,68 @@ class FinancialForecastAgent:
         sys.exit(0)
     
     def startup(self) -> bool:
-        """Start the agent and all MCP servers."""
-        logger.info("🚀 Starting Financial Forecasting Agent with MCP integration...")
+        """Start the agent and all required services."""
+        logger.info("🚀 Starting Enhanced Financial Forecasting Agent...")
         
         # Validate required environment variables
         missing_vars = config.validate_required_env_vars()
         if missing_vars:
             logger.error(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
-            logger.info("💡 Please check your .env file and ensure all required API keys are set")
             return False
         
         # Start MCP clients
         results = mcp_manager.start_all()
-        
         working_servers = [name for name, status in results.items() if status]
         logger.info(f"✅ Agent started with {len(working_servers)} MCP servers: {', '.join(working_servers)}")
+        
+        # Initialize database
+        try:
+            from database.database import db_manager
+            logger.info("✅ Database connection established")
+        except Exception as e:
+            logger.error(f"❌ Database initialization failed: {e}")
+            return False
         
         return True
     
     def shutdown(self):
-        """Shutdown the agent and all MCP servers."""
-        logger.info("🛑 Shutting down Financial Forecasting Agent...")
+        """Shutdown the agent and all services."""
+        logger.info("🛑 Shutting down Enhanced Financial Forecasting Agent...")
         mcp_manager.stop_all()
+        try:
+            from database.database import db_manager
+            db_manager.close()
+        except:
+            pass
         logger.info("✅ Agent shutdown complete")
     
-    def create_agent_graph(self):
-        """Create the 6-step financial forecasting workflow."""
+    def create_enhanced_workflow(self):
+        """Create the enhanced 6-step workflow with proper state management."""
+        
         # Define all tools
-        tools = [
+        all_tools = [
+            # MCP tools
             get_xero_financial_data,
-            get_client_information, 
             conduct_market_research,
-            create_forecast_assumptions,
-            calculate_financial_forecast,
-            create_notion_report
+            create_notion_report,
+            # SQL tools
+            store_xero_data_to_sql,
+            get_client_info_from_sql,
+            get_historical_data_from_sql,
+            store_forecast_assumptions_sql,
+            store_forecast_results_sql,
+            approve_forecast_sql,
+            store_notion_report_sql,
+            # Forecasting tools
+            generate_forecast_assumptions_with_ai,
+            calculate_financial_forecast_python,
+            validate_and_review_forecast,
+            generate_forecast_scenarios,
+            calculate_key_financial_metrics
         ]
         
-        # Bind tools to LLM
-        llm_with_tools = llm.bind_tools(tools)
-        
-        # Define workflow nodes
-        def step_1_xero_data(state: ForecastAgentState) -> Dict[str, Any]:
-            """Step 1: Retrieve financial data from Xero."""
-            logger.info("📊 Step 1: Retrieving Xero financial data...")
-            
-            prompt = f"""You are a financial forecasting agent. Execute Step 1 of the forecasting workflow.
-
-STEP 1: Retrieve Financial Data from Xero
-- Use get_xero_financial_data tool to get profit_and_loss data for user {state.user_id}
-- This provides the historical baseline for our forecast
-
-Call the tool now to retrieve the Xero financial data."""
-            
-            messages = [HumanMessage(content=prompt)]
-            response = llm_with_tools.invoke(messages)
-            
-            return {
-                "messages": state.messages + [response],
-                "current_step": "step_2"
-            }
-        
-        def step_2_client_info(state: ForecastAgentState) -> Dict[str, Any]:
-            """Step 2: Get client business information."""
-            logger.info("🏢 Step 2: Getting client information...")
-            
-            prompt = f"""STEP 2: Get Client Business Information
-- Use get_client_information tool to retrieve business details for user {state.user_id}
-- This provides context about the business for accurate forecasting
-
-Call the tool now to get client information."""
-            
-            messages = state.messages + [HumanMessage(content=prompt)]
-            response = llm_with_tools.invoke(messages)
-            
-            return {
-                "messages": state.messages + [response],
-                "current_step": "step_3"
-            }
-        
-        def step_3_market_research(state: ForecastAgentState) -> Dict[str, Any]:
-            """Step 3: Conduct market research."""
-            logger.info("🔍 Step 3: Conducting market research...")
-            
-            prompt = """STEP 3: Conduct Market Research
-- Use conduct_market_research tool to analyze industry trends
-- Focus on Software Development industry in San Francisco, CA
-- This provides market context for forecast assumptions
-
-Call the tool now to conduct market research."""
-            
-            messages = state.messages + [HumanMessage(content=prompt)]
-            response = llm_with_tools.invoke(messages)
-            
-            return {
-                "messages": state.messages + [response],
-                "current_step": "step_4"
-            }
-        
-        def step_4_assumptions(state: ForecastAgentState) -> Dict[str, Any]:
-            """Step 4: Generate forecast assumptions."""
-            logger.info("📋 Step 4: Generating forecast assumptions...")
-            
-            prompt = """STEP 4: Generate Forecast Assumptions
-- Use create_forecast_assumptions tool to generate assumptions
-- Base assumptions on the historical data, client info, and market research from previous steps
-- Provide the data from previous steps as arguments
-
-Call the tool now to create forecast assumptions."""
-            
-            messages = state.messages + [HumanMessage(content=prompt)]
-            response = llm_with_tools.invoke(messages)
-            
-            return {
-                "messages": state.messages + [response],
-                "current_step": "step_5"
-            }
-        
-        def step_5_calculate_forecast(state: ForecastAgentState) -> Dict[str, Any]:
-            """Step 5: Calculate financial forecast."""
-            logger.info("📈 Step 5: Calculating financial forecast...")
-            
-            prompt = """STEP 5: Calculate Financial Forecast
-- Use calculate_financial_forecast tool to generate 5-year projections
-- Use the historical data and assumptions from previous steps
-- This creates the core forecast results
-
-Call the tool now to calculate the financial forecast."""
-            
-            messages = state.messages + [HumanMessage(content=prompt)]
-            response = llm_with_tools.invoke(messages)
-            
-            return {
-                "messages": state.messages + [response],
-                "current_step": "step_6"
-            }
-        
-        def step_6_create_report(state: ForecastAgentState) -> Dict[str, Any]:
-            """Step 6: Create comprehensive Notion report."""
-            logger.info("📄 Step 6: Creating Notion report...")
-            
-            prompt = """STEP 6: Create Notion Report
-- Use create_notion_report tool to generate comprehensive forecast report
-- Include forecast data, assumptions, and market research from previous steps
-- This creates the final deliverable
-
-Call the tool now to create the Notion report."""
-            
-            messages = state.messages + [HumanMessage(content=prompt)]
-            response = llm_with_tools.invoke(messages)
-            
-            return {
-                "messages": state.messages + [response],
-                "current_step": "complete",
-                "workflow_complete": True
-            }
-        
-        # Tool execution node
-        def execute_tools(state: ForecastAgentState) -> Dict[str, Any]:
+        # Create tool execution function
+        def execute_tools(state: EnhancedForecastState):
             """Execute tools called by the agent."""
             if not state.messages:
                 return {"messages": state.messages}
@@ -633,7 +466,7 @@ Call the tool now to create the Notion report."""
                     tool_args = tool_call.get('args', {})
                     
                     # Find and execute the tool
-                    for tool in tools:
+                    for tool in all_tools:
                         if tool.name == tool_name:
                             try:
                                 result = tool.func(**tool_args)
@@ -648,96 +481,237 @@ Call the tool now to create the Notion report."""
             
             return {"messages": state.messages}
         
-        # Routing function
-        def should_continue(state: ForecastAgentState) -> str:
-            """Determine next step in workflow."""
+        # Bind tools to LLM
+        llm_with_tools = llm.bind_tools(all_tools)
+        
+        def call_model(state: EnhancedForecastState):
+            """Call the model with current state."""
             messages = state.messages
-            if messages:
-                last_message = messages[-1]
-                if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-                    return "execute_tools"
+            response = llm_with_tools.invoke(messages)
+            return {"messages": [response]}
+        
+        def should_continue(state: EnhancedForecastState):
+            """Determine if we should continue or end."""
+            messages = state.messages
+            last_message = messages[-1]
             
-            current_step = state.current_step
-            if current_step == "start":
-                return "step_1"
-            elif current_step == "step_2":
-                return "step_2_client_info"
-            elif current_step == "step_3":
-                return "step_3_market_research"
-            elif current_step == "step_4":
-                return "step_4_assumptions"
-            elif current_step == "step_5":
-                return "step_5_calculate_forecast"
-            elif current_step == "step_6":
-                return "step_6_create_report"
-            elif current_step == "complete":
+            if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                return "tools"
+            elif state.workflow_complete:
                 return END
             else:
-                return "step_1"
+                return END
+        
+        def step_1_retrieve_xero_data(state: EnhancedForecastState):
+            """Step 1: Retrieve and store Xero financial data."""
+            logger.info("📊 Step 1: Retrieving Xero financial data...")
+            
+            prompt = f"""You are a financial forecasting agent executing Step 1 of the workflow.
+
+STEP 1: Retrieve Financial Data from Xero and Store in SQL Database
+
+Your tasks:
+1. Use get_xero_financial_data tool to retrieve profit_and_loss data for user {state.user_id}
+2. Use store_xero_data_to_sql tool to store this data in the SQL database
+
+This provides the historical baseline for our forecast. Execute both tools in sequence.
+"""
+            
+            messages = state.messages + [HumanMessage(content=prompt)]
+            response = llm_with_tools.invoke(messages)
+            
+            # Update step data
+            new_step_data = state.step_data.copy()
+            new_step_data['step_1_complete'] = True
+            
+            return {
+                "messages": state.messages + [response],
+                "current_step": "step_2",
+                "step_data": new_step_data
+            }
+        
+        def step_2_get_client_info(state: EnhancedForecastState):
+            """Step 2: Get client information from SQL database."""
+            logger.info("🏢 Step 2: Getting client information...")
+            
+            prompt = f"""STEP 2: Get Client Business Information from SQL Database
+
+Your task:
+- Use get_client_info_from_sql tool to retrieve business details for user {state.user_id}
+- This provides context about the business for accurate forecasting
+
+Execute the tool now."""
+            
+            messages = state.messages + [HumanMessage(content=prompt)]
+            response = llm_with_tools.invoke(messages)
+            
+            new_step_data = state.step_data.copy()
+            new_step_data['step_2_complete'] = True
+            
+            return {
+                "messages": state.messages + [response],
+                "current_step": "step_3",
+                "step_data": new_step_data
+            }
+        
+        def step_3_market_research(state: EnhancedForecastState):
+            """Step 3: Conduct market research."""
+            logger.info("🔍 Step 3: Conducting market research...")
+            
+            prompt = """STEP 3: Conduct Market Research
+
+Your task:
+- Use conduct_market_research tool to analyze industry trends
+- Focus on Software Development industry in San Francisco, CA
+- This provides market context for forecast assumptions
+
+Execute the tool now."""
+            
+            messages = state.messages + [HumanMessage(content=prompt)]
+            response = llm_with_tools.invoke(messages)
+            
+            new_step_data = state.step_data.copy()
+            new_step_data['step_3_complete'] = True
+            
+            return {
+                "messages": state.messages + [response],
+                "current_step": "step_4",
+                "step_data": new_step_data
+            }
+        
+        def step_4_generate_assumptions(state: EnhancedForecastState):
+            """Step 4: Generate forecast assumptions using AI."""
+            logger.info("📋 Step 4: Generating forecast assumptions...")
+            
+            prompt = """STEP 4: Generate AI-Powered Forecast Assumptions
+
+Your tasks:
+1. Use generate_forecast_assumptions_with_ai tool with data from previous steps
+2. Use store_forecast_assumptions_sql tool to save the assumptions to database
+3. Remember the assumptions_id returned for later steps
+
+Execute both tools in sequence."""
+            
+            messages = state.messages + [HumanMessage(content=prompt)]
+            response = llm_with_tools.invoke(messages)
+            
+            new_step_data = state.step_data.copy()
+            new_step_data['step_4_complete'] = True
+            
+            return {
+                "messages": state.messages + [response],
+                "current_step": "step_5",
+                "step_data": new_step_data
+            }
+        
+        def step_5_calculate_forecast(state: EnhancedForecastState):
+            """Step 5: Calculate financial forecast with validation."""
+            logger.info("📈 Step 5: Calculating financial forecast...")
+            
+            prompt = """STEP 5: Calculate Financial Forecast with Python Engine
+
+Your tasks:
+1. Use calculate_financial_forecast_python tool to generate 5-year projections
+2. Use validate_and_review_forecast tool to validate the results
+3. Use store_forecast_results_sql tool to save approved forecasts
+4. Use approve_forecast_sql tool if validation passes
+
+This creates the core forecast results with iterative feedback."""
+            
+            messages = state.messages + [HumanMessage(content=prompt)]
+            response = llm_with_tools.invoke(messages)
+            
+            new_step_data = state.step_data.copy()
+            new_step_data['step_5_complete'] = True
+            
+            return {
+                "messages": state.messages + [response],
+                "current_step": "step_6",
+                "step_data": new_step_data
+            }
+        
+        def step_6_create_report(state: EnhancedForecastState):
+            """Step 6: Create comprehensive Notion report."""
+            logger.info("📄 Step 6: Creating Notion report...")
+            
+            prompt = """STEP 6: Create Comprehensive Notion Report
+
+Your tasks:
+1. Use create_notion_report tool to generate the final report
+2. Use store_notion_report_sql tool to save report information
+3. Include all data from previous steps
+
+This creates the final deliverable and completes the workflow."""
+            
+            messages = state.messages + [HumanMessage(content=prompt)]
+            response = llm_with_tools.invoke(messages)
+            
+            new_step_data = state.step_data.copy()
+            new_step_data['step_6_complete'] = True
+            
+            return {
+                "messages": state.messages + [response],
+                "current_step": "complete",
+                "step_data": new_step_data,
+                "workflow_complete": True
+            }
         
         # Build the graph
-        workflow = StateGraph(ForecastAgentState)
+        workflow = StateGraph(EnhancedForecastState)
         
         # Add nodes
-        workflow.add_node("step_1", step_1_xero_data)
-        workflow.add_node("step_2_client_info", step_2_client_info)
-        workflow.add_node("step_3_market_research", step_3_market_research)
-        workflow.add_node("step_4_assumptions", step_4_assumptions)
-        workflow.add_node("step_5_calculate_forecast", step_5_calculate_forecast)
-        workflow.add_node("step_6_create_report", step_6_create_report)
-        workflow.add_node("execute_tools", execute_tools)
+        workflow.add_node("step_1", step_1_retrieve_xero_data)
+        workflow.add_node("step_2", step_2_get_client_info) 
+        workflow.add_node("step_3", step_3_market_research)
+        workflow.add_node("step_4", step_4_generate_assumptions)
+        workflow.add_node("step_5", step_5_calculate_forecast)
+        workflow.add_node("step_6", step_6_create_report)
+        workflow.add_node("call_model", call_model)
+        workflow.add_node("tools", execute_tools)
         
-        # Add edges
+        # Set entry point
         workflow.set_entry_point("step_1")
         
-        # Add conditional edges
-        for step in ["step_1", "step_2_client_info", "step_3_market_research", 
-                    "step_4_assumptions", "step_5_calculate_forecast", "step_6_create_report"]:
-            workflow.add_conditional_edges(step, should_continue)
+        # Add simple linear edges
+        workflow.add_edge("step_1", "step_2")
+        workflow.add_edge("step_2", "step_3") 
+        workflow.add_edge("step_3", "step_4")
+        workflow.add_edge("step_4", "step_5")
+        workflow.add_edge("step_5", "step_6")
+        workflow.add_edge("step_6", END)
         
-        workflow.add_edge("execute_tools", "step_1")  # Return to routing after tool execution
-        
-        return workflow.compile(checkpointer=None, interrupt_before=[], debug=False)
+        return workflow.compile()
     
     def run_forecast(self, user_id: str = "user_123") -> str:
         """Run the complete 6-step forecasting workflow."""
-        logger.info(f"🚀 Starting financial forecast for user: {user_id}")
+        logger.info(f"🚀 Starting enhanced financial forecast for user: {user_id}")
         
         # Create initial state
-        initial_state = ForecastAgentState(
-            messages=[HumanMessage(content=f"Create a financial forecast for user {user_id}")],
+        initial_state = EnhancedForecastState(
+            messages=[HumanMessage(content=f"Create a comprehensive financial forecast for user {user_id}")],
             current_step="start",
-            user_id=user_id
+            user_id=user_id,
+            step_data={}
         )
         
         try:
-            # Run the workflow with recursion limit
-            config_dict = {"recursion_limit": 50}
-            final_state = self.graph.invoke(initial_state, config=config_dict)
+            # Run the workflow
+            final_state = self.graph.invoke(initial_state)
             
-            # Extract final response
-            if final_state.messages:
-                final_message = final_state.messages[-1]
-                result = f"✅ Financial forecast completed for {user_id}\n\n"
-                if hasattr(final_message, 'content'):
-                    result += final_message.content
-                else:
-                    result += str(final_message)
-                return result
-            else:
-                return f"✅ Financial forecast workflow completed for {user_id}"
+            logger.info("✅ Enhanced financial forecast completed")
+            return f"✅ Financial forecast completed successfully for {user_id}"
                 
         except Exception as e:
-            logger.error(f"❌ Forecast workflow failed: {e}")
+            logger.error(f"❌ Enhanced forecast workflow failed: {e}")
             return f"❌ Forecast failed for {user_id}: {e}"
     
     def interactive_mode(self):
         """Run the agent in interactive mode."""
-        print("\n💰 Financial Forecasting Agent with MCP Integration")
+        print("\n💰 Enhanced Financial Forecasting Agent")
         print("=" * 60)
-        print("📊 6-Step Workflow: Xero → Client Info → Market Research → Assumptions → Forecast → Notion Report")
-        print("🔌 MCP Servers: Xero (financial data), Notion (reporting) + Perplexity API (research)")
-        print("Type 'forecast' to run complete workflow, 'quit' to exit")
+        print("🔄 Complete 6-Step Workflow with SQL Database & Python Forecasting")
+        print("🔌 MCP Integration: Xero + Notion | Database: SQLite | Engine: Python")
+        print("Commands: 'forecast' (run workflow), 'status' (check systems), 'quit' (exit)")
         print("-" * 60)
         
         while True:
@@ -747,23 +721,20 @@ Call the tool now to create the Notion report."""
                 if user_input.lower() in ['quit', 'exit', 'q']:
                     break
                 elif user_input.lower() in ['forecast', 'run', 'start']:
-                    print("\n🚀 Starting 6-step financial forecasting workflow...")
+                    print("\n🚀 Starting enhanced 6-step financial forecasting workflow...")
                     result = self.run_forecast()
-                    print(f"\n🤖 Result:\n{result}")
+                    print(f"\n🤖 Result: {result}")
                 elif user_input.lower() == 'status':
-                    self.show_mcp_status()
+                    self.show_system_status()
                 elif user_input.lower() == 'help':
                     self.show_help()
                 elif not user_input:
                     continue
                 else:
-                    print("Commands: 'forecast' (run workflow), 'status' (MCP status), 'help', 'quit'")
+                    print("Commands: 'forecast', 'status', 'help', 'quit'")
                     
             except KeyboardInterrupt:
                 print("\n\n🛑 Interrupted by user")
-                break
-            except EOFError:
-                print("\n\n🛑 End of input")
                 break
             except Exception as e:
                 logger.error(f"❌ Error in interactive mode: {e}")
@@ -771,46 +742,71 @@ Call the tool now to create the Notion report."""
         
         print("\n👋 Goodbye!")
     
-    def show_mcp_status(self):
-        """Show status of MCP servers."""
-        print("\n📊 MCP Server Status:")
+    def show_system_status(self):
+        """Show comprehensive system status."""
+        print("\n📊 Enhanced Agent System Status:")
+        
+        # MCP status
+        print("\n🔌 MCP Servers:")
         for name, client in mcp_manager.clients.items():
             if client.process and client.initialized:
                 status = "🟢 Running"
+                tools_count = len(client.list_tools())
             elif client.process:
                 status = "🟡 Started but not initialized"
+                tools_count = 0
             else:
                 status = "🔴 Stopped"
-            
-            tools_count = len(client.list_tools()) if client.initialized else 0
+                tools_count = 0
             print(f"  {name.title()}: {status} ({tools_count} tools)")
+        
+        # Database status
+        print("\n🗄️ Database:")
+        try:
+            from database.database import db_manager
+            client = db_manager.get_client('user_123')
+            print(f"  SQLite: 🟢 Connected (Sample client: {client['company_name'] if client else 'None'})")
+        except Exception as e:
+            print(f"  SQLite: 🔴 Error ({e})")
+        
+        # Tools status
+        print("\n🛠️ Forecasting Tools:")
+        print("  SQL Tools: 🟢 Loaded (7 tools)")
+        print("  Forecast Tools: 🟢 Loaded (5 tools)")
+        print("  MCP Tools: 🟢 Loaded (3 tools)")
     
     def show_help(self):
-        """Show help information."""
-        print("\n📚 Financial Forecasting Agent Help:")
-        print("Commands:")
-        print("  forecast - Run complete 6-step forecasting workflow")
-        print("  status   - Show MCP server status")
+        """Show comprehensive help information."""
+        print("\n📚 Enhanced Financial Forecasting Agent Help:")
+        print("\nCommands:")
+        print("  forecast - Run complete 6-step workflow with SQL & Python forecasting")
+        print("  status   - Show comprehensive system status")
         print("  help     - Show this help message")
         print("  quit     - Exit the agent")
-        print("\n🔄 Workflow Steps:")
-        print("  1. 📊 Retrieve Xero financial data")
-        print("  2. 🏢 Get client business information")
-        print("  3. 🔍 Conduct market research (Perplexity)")
-        print("  4. 📋 Generate forecast assumptions")
-        print("  5. 📈 Calculate 5-year financial forecast")
-        print("  6. 📄 Create comprehensive Notion report")
+        print("\n🔄 Enhanced Workflow Steps:")
+        print("  1. 📊 Retrieve Xero data via MCP → Store in SQL database")
+        print("  2. 🏢 Get client info from SQL database")
+        print("  3. 🔍 Conduct market research via Perplexity API")
+        print("  4. 📋 Generate AI-powered assumptions → Store in SQL")
+        print("  5. 📈 Calculate forecast with Python engine → Validate → Store results")
+        print("  6. 📄 Create Notion report → Store report info in SQL")
+        print("\n✨ New Features:")
+        print("  • SQL database for historical data storage")
+        print("  • Python P&L forecasting engine with validation")
+        print("  • Iterative feedback loop for assumption refinement")
+        print("  • Three-statement model calculations")
+        print("  • Scenario analysis and key metrics")
 
 def main():
     """Main entry point."""
-    print("💰 Financial Forecasting Agent with MCP Integration")
-    print("=" * 60)
+    print("💰 Enhanced Financial Forecasting Agent with SQL & Python Tools")
+    print("=" * 70)
     
     # Create and start the agent
-    agent = FinancialForecastAgent()
+    agent = EnhancedFinancialForecastAgent()
     
     if not agent.startup():
-        logger.error("❌ Failed to start agent")
+        logger.error("❌ Failed to start enhanced agent")
         sys.exit(1)
     
     try:

@@ -72,11 +72,6 @@ class MCPTestFramework:
         """Load test configuration."""
         default_config = {
             "mcp_servers": {
-                "perplexity": {
-                    "path": "mcp_servers/perplexity/perplexity-ask/dist/index.js",
-                    "env_vars": ["PERPLEXITY_API_KEY"],
-                    "required": True
-                },
                 "xero": {
                     "path": "mcp_servers/xero/dist/index.js",
                     "env_vars": ["XERO_ACCESS_TOKEN", "XERO_CLIENT_ID", "XERO_CLIENT_SECRET"],
@@ -423,7 +418,6 @@ class MCPTestFramework:
         
         # Test basic tool calls
         tool_tests = [
-            ("perplexity", "perplexity_ask", {"messages": [{"role": "user", "content": "Hello"}]}),
             ("xero", "list-xero-organisations", {}),
             ("notion", "API-get-users", {})
         ]

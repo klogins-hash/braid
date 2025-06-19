@@ -98,17 +98,6 @@ setup_local_mcp() {
     mkdir -p "$MCP_SERVERS_DIR"
     cd "$MCP_SERVERS_DIR"
     
-    # Clone and setup Perplexity MCP
-    if [ ! -z "$PERPLEXITY_API_KEY" ]; then
-        print_status "Setting up Perplexity MCP..."
-        if [ ! -d "perplexity" ]; then
-            git clone https://github.com/ppl-ai/modelcontextprotocol.git perplexity
-        fi
-        cd perplexity/perplexity-ask
-        npm install >/dev/null 2>&1
-        cd ../..
-        print_status "✅ Perplexity MCP ready"
-    fi
     
     # Clone and setup Xero MCP
     if [ ! -z "$XERO_ACCESS_TOKEN" ]; then
@@ -154,10 +143,6 @@ validate_environment() {
     # Check for at least one MCP server configuration
     local mcp_count=0
     
-    if [ ! -z "$PERPLEXITY_API_KEY" ]; then
-        print_status "✅ Perplexity API key found"
-        ((mcp_count++))
-    fi
     
     if [ ! -z "$XERO_ACCESS_TOKEN" ]; then
         print_status "✅ Xero access token found"

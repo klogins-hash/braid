@@ -4,7 +4,8 @@ A production-ready template for creating agents with Model Context Protocol (MCP
 
 ## Features
 
-- **Pre-configured MCP Integration**: Connects to Perplexity, Xero, and Notion MCP servers
+- **Pre-configured MCP Integration**: Connects to Xero and Notion MCP servers
+- **Direct API Integrations**: Perplexity web research via core integrations
 - **LangGraph Workflow**: Complete agent workflow with state management
 - **Production Ready**: Error handling, logging, and graceful shutdown
 - **Docker Support**: Ready for containerized deployment

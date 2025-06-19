@@ -15,20 +15,6 @@
       ],
       "timeout": 45000
     },
-    "perplexity": {
-      "command": ["node", "-e", "console.log('MCP Client connecting to Perplexity server at localhost:3003')"],
-      "transport": {
-        "type": "http", 
-        "host": "localhost",
-        "port": 3003
-      },
-      "tools": [
-        "pplx_search",
-        "pplx_ask",
-        "pplx_market_research"
-      ],
-      "timeout": 30000
-    },
     "notion": {
       "command": ["node", "-e", "console.log('MCP Client connecting to Notion server at localhost:3001')"],
       "transport": {

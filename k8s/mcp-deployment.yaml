@@ -13,79 +13,10 @@ metadata:
   namespace: mcp-servers
 type: Opaque
 stringData:
-  perplexity-api-key: ""  # Add your actual key
   xero-access-token: ""   # Add your actual token
   xero-client-id: ""      # Add your actual client ID
   xero-client-secret: ""  # Add your actual client secret
   notion-api-key: ""      # Add your actual key
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: perplexity-mcp
-  namespace: mcp-servers
-  labels:
-    app: perplexity-mcp
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: perplexity-mcp
-  template:
-    metadata:
-      labels:
-        app: perplexity-mcp
-    spec:
-      containers:
-      - name: perplexity-mcp
-        image: your-registry/perplexity-mcp:latest
-        ports:
-        - containerPort: 3001
-        env:
-        - name: PERPLEXITY_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: mcp-secrets
-              key: perplexity-api-key
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        livenessProbe:
-          exec:
-            command:
-            - node
-            - -e
-            - "process.exit(0)"
-          initialDelaySeconds: 30
-          periodSeconds: 30
-        readinessProbe:
-          exec:
-            command:
-            - node
-            - -e
-            - "process.exit(0)"
-          initialDelaySeconds: 5
-          periodSeconds: 10
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: perplexity-mcp-service
-  namespace: mcp-servers
-spec:
-  selector:
-    app: perplexity-mcp
-  ports:
-  - protocol: TCP
-    port: 3001
-    targetPort: 3001
-  type: ClusterIP
 
 ---
 apiVersion: apps/v1
@@ -232,34 +163,6 @@ spec:
     port: 3003
     targetPort: 3003
   type: ClusterIP
-
----
-# Horizontal Pod Autoscaler for scaling based on CPU/Memory
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: perplexity-mcp-hpa
-  namespace: mcp-servers
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: perplexity-mcp
-  minReplicas: 1
-  maxReplicas: 5
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
 
 ---
 apiVersion: autoscaling/v2

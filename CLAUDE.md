@@ -49,9 +49,14 @@ Reference these when designing agent capabilities:
 
 | Server | Tools | Use Cases |
 |--------|-------|-----------|
-| **Perplexity** | web_research, perplexity_ask | Real-time research, market analysis |
 | **Xero** | financial reports, invoices | Accounting, financial data |
 | **Notion** | page creation, search | Documentation, knowledge management |
+
+### 4.1. Available Direct Integrations (Non-MCP)
+
+| Integration | Tools | Use Cases |
+|-------------|-------|-----------|
+| **Perplexity** | web search, research, market analysis | Real-time web research, market insights |
 
 ### 5. Key Scripts to Reference
 
@@ -129,7 +134,6 @@ braid/
 - Reference Xero MCP integration examples
 
 ### When Creating Research Agents  
-- Use Perplexity MCP for real-time data
 - Reference web research patterns in templates
 - Consider Notion MCP for report generation
 

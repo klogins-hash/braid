@@ -39,7 +39,6 @@ python3 your_agent.py
 
 | MCP Server | Category | Description | Repository |
 |------------|----------|-------------|------------|
-| **Perplexity** | Data/Research | Real-time web search and research | `https://github.com/ppl-ai/modelcontextprotocol` |
 | **Xero** | Finance | Accounting and financial management | `https://github.com/XeroAPI/xero-mcp-server` |
 | **Notion** | Productivity | Workspace and knowledge management | `https://github.com/makenotion/notion-mcp-server` |
 | **MongoDB** | Data | Database operations and management | `https://github.com/mongodb-js/mongodb-mcp-server` |
@@ -47,11 +46,6 @@ python3 your_agent.py
 | **Twilio** | Communication | SMS, voice, and messaging APIs | `https://github.com/twilio-labs/mcp` |
 
 ### MCP Capabilities by Server
-
-#### Perplexity MCP Tools
-- `perplexity_ask`: Real-time conversational search
-- `perplexity_research`: Deep research with citations
-- `perplexity_reason`: Advanced reasoning tasks
 
 #### Xero MCP Tools (50+ tools)
 - Financial reporting (P&L, Balance Sheet, Trial Balance)
@@ -81,9 +75,6 @@ LANGCHAIN_API_KEY=your_langsmith_key
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_PROJECT=your_project_name
 
-# Perplexity MCP
-PERPLEXITY_API_KEY=your_perplexity_key
-
 # Xero MCP  
 XERO_ACCESS_TOKEN=your_xero_bearer_token
 XERO_CLIENT_ID=your_xero_client_id
@@ -105,12 +96,6 @@ TWILIO_API_SECRET=your_twilio_secret
 ```
 
 ### 2. API Key Setup Instructions
-
-#### Perplexity API Key
-1. Visit [https://www.perplexity.ai/](https://www.perplexity.ai/)
-2. Sign up and navigate to API settings
-3. Generate an API key
-4. Add to `.env` as `PERPLEXITY_API_KEY`
 
 #### Xero API Setup
 1. Visit [https://developer.xero.com/](https://developer.xero.com/)
@@ -175,10 +160,6 @@ If you prefer manual setup or need to customize the process:
 # Create MCP servers directory
 mkdir -p mcp_servers && cd mcp_servers
 
-# Clone Perplexity MCP
-git clone https://github.com/ppl-ai/modelcontextprotocol.git perplexity
-cd perplexity/perplexity-ask && npm install && cd ../..
-
 # Clone Xero MCP
 git clone https://github.com/XeroAPI/xero-mcp-server.git xero
 cd xero && npm install && cd ..
@@ -194,13 +175,6 @@ cd ..
 ### 2. Create Startup Scripts
 
 Create individual startup scripts for each MCP server:
-
-**`scripts/start_perplexity_mcp.sh`:**
-```bash
-#!/bin/bash
-cd mcp_servers/perplexity/perplexity-ask
-PERPLEXITY_API_KEY=$PERPLEXITY_API_KEY node dist/index.js
-```
 
 **`scripts/start_xero_mcp.sh`:**
 ```bash
@@ -236,14 +210,6 @@ else
     exit 1
 fi
 
-# Start Perplexity MCP
-if [ ! -z "$PERPLEXITY_API_KEY" ]; then
-    echo "📊 Starting Perplexity MCP..."
-    ./scripts/start_perplexity_mcp.sh &
-    PERPLEXITY_PID=$!
-    echo "   PID: $PERPLEXITY_PID"
-fi
-
 # Start Xero MCP
 if [ ! -z "$XERO_ACCESS_TOKEN" ]; then
     echo "💰 Starting Xero MCP..."
@@ -261,7 +227,7 @@ if [ ! -z "$NOTION_API_KEY" ]; then
 fi
 
 # Save PIDs for cleanup
-echo "$PERPLEXITY_PID $XERO_PID $NOTION_PID" > mcp_servers.pid
+echo "$XERO_PID $NOTION_PID" > mcp_servers.pid
 
 echo "✅ All MCP servers started!"
 echo "🛑 To stop: ./scripts/stop_all_mcp_servers.sh"
@@ -279,7 +245,7 @@ wait
 python3 test_mcp_connections.py
 
 # Test specific MCP server
-python3 test_mcp_connections.py --server perplexity
+python3 test_mcp_connections.py --server xero
 python3 test_mcp_connections.py --server xero
 python3 test_mcp_connections.py --server notion
 ```
@@ -295,14 +261,14 @@ python3 -c "
 import subprocess
 import json
 
-# Test Perplexity MCP
+# Test Xero MCP
 process = subprocess.Popen(
-    ['node', 'mcp_servers/perplexity/perplexity-ask/dist/index.js'],
+    ['node', 'mcp_servers/xero/dist/index.js'],
     stdin=subprocess.PIPE,
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
     text=True,
-    env={'PERPLEXITY_API_KEY': 'your_key'}
+    env={'XERO_CLIENT_BEARER_TOKEN': 'your_token'}
 )
 
 # Send initialization request
@@ -395,14 +361,7 @@ class MCPManager:
     def __init__(self):
         self.clients = {}
         
-    def setup_perplexity_mcp(self):
-        """Setup Perplexity MCP client."""
-        self.clients['perplexity'] = MCPClient(
-            server_path="node",
-            server_args=["mcp_servers/perplexity/perplexity-ask/dist/index.js"],
-            env_vars={"PERPLEXITY_API_KEY": os.getenv('PERPLEXITY_API_KEY')}
-        )
-        
+    
     def setup_xero_mcp(self):
         """Setup Xero MCP client."""
         self.clients['xero'] = MCPClient(
@@ -442,28 +401,6 @@ Integrate MCP tools into your LangGraph agent:
 
 ```python
 from langchain.tools import tool
-
-@tool
-def perplexity_research(query: str) -> str:
-    """Perform real-time research using Perplexity MCP."""
-    mcp_client = mcp_manager.clients['perplexity']
-    
-    # Initialize if not already done
-    init_response = mcp_client.send_request("initialize", {
-        "protocolVersion": "2024-11-05",
-        "capabilities": {},
-        "clientInfo": {"name": "agent", "version": "1.0.0"}
-    })
-    
-    # Call the research tool
-    response = mcp_client.send_request("tools/call", {
-        "name": "perplexity_research",
-        "arguments": {
-            "messages": [{"role": "user", "content": query}]
-        }
-    })
-    
-    return response.get("result", {}).get("content", [{}])[0].get("text", "")
 
 @tool
 def xero_get_profit_loss() -> str:
@@ -506,16 +443,6 @@ Create a `docker-compose.mcp.yml` for MCP servers:
 version: '3.8'
 
 services:
-  perplexity-mcp:
-    build:
-      context: ./mcp_servers/perplexity/perplexity-ask
-      dockerfile: Dockerfile
-    environment:
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
-    ports:
-      - "3001:3001"
-    restart: unless-stopped
-    
   xero-mcp:
     build:
       context: ./mcp_servers/xero
@@ -541,11 +468,9 @@ services:
   your-agent:
     build: .
     depends_on:
-      - perplexity-mcp
       - xero-mcp
       - notion-mcp
     environment:
-      - MCP_PERPLEXITY_URL=http://perplexity-mcp:3001
       - MCP_XERO_URL=http://xero-mcp:3002
       - MCP_NOTION_URL=http://notion-mcp:3003
     ports:
@@ -578,17 +503,6 @@ spec:
         app: mcp-servers
     spec:
       containers:
-      - name: perplexity-mcp
-        image: your-registry/perplexity-mcp:latest
-        env:
-        - name: PERPLEXITY_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: mcp-secrets
-              key: perplexity-api-key
-        ports:
-        - containerPort: 3001
-        
       - name: xero-mcp
         image: your-registry/xero-mcp:latest
         env:
@@ -627,7 +541,7 @@ echo $NOTION_API_KEY
 node --version  # Should be 18+
 
 # Check server logs
-cat mcp_servers/perplexity/error.log
+cat mcp_servers/xero/error.log
 ```
 
 #### 2. Connection Refused
@@ -647,7 +561,7 @@ telnet localhost 3001
 #### 3. API Authentication Errors
 ```bash
 # Test API keys directly
-curl -H "Authorization: Bearer $PERPLEXITY_API_KEY" https://api.perplexity.ai/
+curl -H "Authorization: Bearer $XERO_ACCESS_TOKEN" https://api.xero.com/connections
 curl -H "Authorization: Bearer $XERO_ACCESS_TOKEN" https://api.xero.com/connections
 ```
 
@@ -660,7 +574,7 @@ Enable debug logging for MCP servers:
 DEBUG=mcp:* ./scripts/start_all_mcp_servers.sh
 
 # Or for individual servers
-DEBUG=perplexity:* node mcp_servers/perplexity/perplexity-ask/dist/index.js
+DEBUG=xero:* node mcp_servers/xero/dist/index.js
 ```
 
 ### Health Checks
@@ -676,7 +590,6 @@ import json
 def check_mcp_health():
     """Check health of all MCP servers."""
     servers = {
-        'perplexity': 'mcp_servers/perplexity/perplexity-ask/dist/index.js',
         'xero': 'mcp_servers/xero/dist/index.js',
         'notion': 'mcp_servers/notion/bin/cli.mjs'
     }
