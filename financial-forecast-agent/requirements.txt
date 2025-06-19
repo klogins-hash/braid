@@ -1,0 +1,26 @@
+# Core Dependencies
+python-dotenv==1.0.0
+requests==2.31.0
+langchain-openai==0.1.8
+langchain-core==0.2.10
+langgraph==0.0.55
+
+# Database
+sqlite3
+
+# API Integrations
+openai==1.35.0
+
+# Production Monitoring
+prometheus-client==0.17.1
+flask==2.3.3
+
+# Utilities
+pydantic==2.4.2
+uvicorn==0.23.2
+fastapi==0.103.1
+
+# Development (optional)
+pytest==7.4.2
+black==23.7.0
+flake8==6.0.0

@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  perplexity-mcp:
+    build:
+      context: ./mcp-servers/perplexity
+      dockerfile: Dockerfile
+    container_name: perplexity-mcp
+    environment:
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    volumes:
+      - perplexity-logs:/app/logs
+    labels:
+      - "traefik.enable=false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  xero-mcp:
+    build:
+      context: ./mcp-servers/xero
+      dockerfile: Dockerfile
+    container_name: xero-mcp
+    environment:
+      - XERO_CLIENT_BEARER_TOKEN=${XERO_ACCESS_TOKEN}
+      - XERO_CLIENT_ID=${XERO_CLIENT_ID}
+      - XERO_CLIENT_SECRET=${XERO_CLIENT_SECRET}
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    volumes:
+      - xero-logs:/app/logs
+    labels:
+      - "traefik.enable=false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  notion-mcp:
+    build:
+      context: ./mcp-servers/notion
+      dockerfile: Dockerfile
+    container_name: notion-mcp
+    environment:
+      - NOTION_API_KEY=${NOTION_API_KEY}
+    ports:
+      - "3003:3003"
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    volumes:
+      - notion-logs:/app/logs
+    labels:
+      - "traefik.enable=false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: MCP proxy/gateway service
+  mcp-gateway:
+    image: nginx:alpine
+    container_name: mcp-gateway
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    volumes:
+      - ./nginx/mcp-nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - perplexity-mcp
+      - xero-mcp
+      - notion-mcp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mcp-gateway.rule=Host(`mcp.localhost`)"
+      - "traefik.http.services.mcp-gateway.loadbalancer.server.port=80"
+
+networks:
+  mcp-network:
+    driver: bridge
+    name: mcp-network
+
+volumes:
+  perplexity-logs:
+    driver: local
+  xero-logs:
+    driver: local
+  notion-logs:
+    driver: local

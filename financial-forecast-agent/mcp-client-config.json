@@ -1,0 +1,59 @@
+{
+  "mcp_servers": {
+    "xero": {
+      "command": ["node", "-e", "console.log('MCP Client connecting to Xero server at localhost:3002')"],
+      "transport": {
+        "type": "http",
+        "host": "localhost",
+        "port": 3002
+      },
+      "tools": [
+        "xero_get_organisations",
+        "xero_get_profit_loss", 
+        "xero_get_balance_sheet",
+        "xero_get_cash_flow"
+      ],
+      "timeout": 45000
+    },
+    "perplexity": {
+      "command": ["node", "-e", "console.log('MCP Client connecting to Perplexity server at localhost:3003')"],
+      "transport": {
+        "type": "http", 
+        "host": "localhost",
+        "port": 3003
+      },
+      "tools": [
+        "pplx_search",
+        "pplx_ask",
+        "pplx_market_research"
+      ],
+      "timeout": 30000
+    },
+    "notion": {
+      "command": ["node", "-e", "console.log('MCP Client connecting to Notion server at localhost:3001')"],
+      "transport": {
+        "type": "http",
+        "host": "localhost", 
+        "port": 3001
+      },
+      "tools": [
+        "notion_create_page",
+        "notion_update_page",
+        "notion_search_pages",
+        "notion_create_database"
+      ],
+      "timeout": 30000
+    }
+  },
+  "connection_settings": {
+    "retry_attempts": 3,
+    "retry_delay": 2000,
+    "health_check_interval": 30000,
+    "auto_reconnect": true
+  },
+  "logging": {
+    "level": "info",
+    "include_tool_calls": true,
+    "include_responses": false
+  }
+}

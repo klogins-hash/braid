@@ -1,0 +1,23 @@
+# Core agent dependencies
+langgraph>=0.1.0
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-community>=0.2.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# JSON and data handling
+pydantic>=2.0.0
+
+# Optional: Enhanced logging and monitoring
+structlog>=23.0.0
+
+# Optional: Testing utilities  
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Optional: Development tools
+black>=23.0.0
+isort>=5.12.0
+mypy>=1.5.0
