@@ -34,6 +34,9 @@ braid new my-agent --production \
   --tools slack,files \
   --mcps notion,twilio \
   --description "Agent with Notion and Twilio integration"
+
+# IMPORTANT: For MCP-enabled agents, ALWAYS read CLAUDE.md first
+# It contains the complete MCP integration workflow and file references
 ```
 
 ## 📁 Codebase Architecture
@@ -79,13 +82,16 @@ my-agent/
 - **execution**: Workflow control (3 tools)
 - **code**: Python/JS execution (2 tools)
 
-### MCP Library (6 Production-Ready)
-- **notion**: Workspace management
-- **agentql**: Web automation
-- **alphavantage**: Market data
-- **perplexity**: Real-time search
-- **mongodb**: Database operations
-- **twilio**: Multi-channel messaging
+### MCP Library (7 Production-Ready MCPs)
+- **perplexity**: Real-time web research and search (3 tools)
+- **xero**: Financial accounting and business data (50+ tools)  
+- **notion**: Workspace and knowledge management (19+ tools)
+- **mongodb**: Database operations and queries
+- **agentql**: Web automation and scraping
+- **alphavantage**: Financial market data
+- **twilio**: SMS, voice, WhatsApp messaging
+
+> **🎯 MCP Integration System**: Complete MCP setup with automated server management, Docker deployment, and testing. See `CLAUDE.md` for MCP development workflow.
 
 ### Common Tool Combinations
 ```bash

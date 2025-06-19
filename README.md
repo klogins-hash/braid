@@ -20,7 +20,7 @@ Braid provides everything needed for professional agent development:
 
 - **🏗️ Agent Architecture**: Production-ready LangGraph patterns
 - **🛠️ 40+ Tools**: Google Workspace, Slack, data processing, APIs, workflows
-- **🔌 6 MCPs**: Notion, Twilio, Perplexity, MongoDB, AgentQL, AlphaVantage  
+- **🔌 7 MCPs**: Perplexity, Xero, Notion, MongoDB, AgentQL, AlphaVantage, Twilio  
 - **💾 Memory Systems**: Persistent conversations, RAG, vector storage
 - **📦 Production Deployment**: Docker, Kubernetes, monitoring, security
 - **🧪 Testing Framework**: Unit tests, integration tests, debugging tools
@@ -97,13 +97,16 @@ Claude Code will:
 - **Workflow Control**: Scheduling, delays, sub-processes
 - **Code Execution**: Python, JavaScript runtime
 
-### 🔌 MCP Integrations
-- **Notion**: Workspace and knowledge management
-- **Twilio**: SMS, voice, WhatsApp messaging
-- **Perplexity**: Real-time search and research
-- **MongoDB**: Database operations
+### 🔌 MCP Integrations (Model Context Protocol)
+- **Perplexity**: Real-time web research and search (3 tools)
+- **Xero**: Financial accounting and business data (50+ tools)
+- **Notion**: Workspace and knowledge management (19+ tools)
+- **MongoDB**: Database operations and queries
 - **AgentQL**: Web automation and scraping
 - **AlphaVantage**: Financial market data
+- **Twilio**: SMS, voice, WhatsApp messaging
+
+> **🎯 MCP-Enabled Development**: Braid includes a complete MCP integration system with automated setup, Docker deployment, and testing frameworks. See [MCP Integration Guide](docs/guides/mcp-integration/MCP_SETUP_GUIDE.md).
 
 ### 🏗️ Agent Patterns
 - **ReAct Agents**: Tool-using conversational agents

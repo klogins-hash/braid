@@ -38,6 +38,11 @@ Welcome to the Braid documentation! This guide will help you navigate our organi
 - **[Agent Development Best Practices](guides/agent-development/AGENT_DEVELOPMENT_BEST_PRACTICES.md)** ⭐ - Essential patterns and anti-patterns
 - **[Agent Creator Template](guides/agent-development/agent-creator-template.md)** - Standard template structure
 
+#### MCP Integration (Model Context Protocol)
+- **[MCP Integration Hub](guides/mcp-integration/README.md)** ⭐ - Complete MCP documentation portal
+- **[MCP Setup Guide](guides/mcp-integration/MCP_SETUP_GUIDE.md)** ⭐ - Comprehensive setup and configuration
+- **[MCP Deployment Guide](guides/mcp-integration/MCP_DEPLOYMENT_GUIDE.md)** ⭐ - Production deployment with Docker/K8s
+
 #### API Integrations  
 - **[Live API Integration Checklist](guides/api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md)** ⭐ - Pre-development checklist
 - **[Xero API Integration Guide](guides/api-integrations/XERO_API_INTEGRATION_GUIDE.md)** ⭐ - Comprehensive troubleshooting
@@ -59,7 +64,8 @@ Welcome to the Braid documentation! This guide will help you navigate our organi
 ### I'm Building a Production Agent
 1. **[Agent Development Best Practices](guides/agent-development/AGENT_DEVELOPMENT_BEST_PRACTICES.md)** ⭐
 2. **[Live API Integration Checklist](guides/api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md)** ⭐
-3. [Production Best Practices](tutorials/langgraph_agent_guide/08_production_best_practices.md)
+3. **[MCP Integration Hub](guides/mcp-integration/README.md)** ⭐ (for MCP-enabled agents)
+4. [Production Best Practices](tutorials/langgraph_agent_guide/08_production_best_practices.md)
 
 ### I'm Integrating with APIs
 1. **[Live API Integration Checklist](guides/api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md)** ⭐
@@ -115,9 +121,12 @@ Production-ready templates with battle-tested patterns:
 
 ## 🔧 Development Tools
 
-### MCP (Model Context Protocol) Integrations
-- **Registry**: `mcp/registry.json` - Available MCP servers
-- **Integration Examples**: `mcp/` folders for specific services
+### MCP (Model Context Protocol) System
+- **Complete Documentation**: [MCP Integration Hub](guides/mcp-integration/README.md)
+- **Production Templates**: `templates/mcp-agent/` - Ready-to-use MCP agent template
+- **Testing Framework**: `tests/mcp_test_framework.py` - Comprehensive MCP testing
+- **Deployment Automation**: `scripts/setup_mcp_servers.sh`, `scripts/build_mcp_images.sh`
+- **Container Configs**: `docker/mcp-servers/`, `k8s/mcp-deployment.yaml`
 
 ### Core Tools and Utilities
 - **Tool Loader**: `core/tool_loader.py`
