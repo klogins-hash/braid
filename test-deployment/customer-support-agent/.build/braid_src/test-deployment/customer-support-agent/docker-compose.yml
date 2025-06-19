@@ -1,0 +1,108 @@
+version: 3.8
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: braid-agent
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: info
+      MCP_TIMEOUT: 60
+      RETRY_ATTEMPTS: 5
+      HEALTH_CHECK_INTERVAL: 30
+    networks:
+    - mcp_network
+    - braid-mcp-network
+    ports:
+    - 8000:8000
+    volumes:
+    - ./data:/app/data
+    - ./logs:/app/logs
+    - ./cache:/app/cache
+    depends_on:
+      notion-mcp:
+        condition: service_healthy
+      twilio-mcp:
+        condition: service_healthy
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import requests; requests.get('http://localhost:8000/health')
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpu: 1.0
+        reservations:
+          memory: 256m
+          cpu: 0.25
+  notion-mcp:
+    build:
+      context: ./mcp/notion
+      dockerfile: Dockerfile
+    container_name: notion-mcp-server
+    environment:
+    - NOTION_API_KEY=${NOTION_API_KEY}
+    restart: unless-stopped
+    networks:
+    - braid-mcp-network
+    healthcheck:
+      test: &id001
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8080/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+    - notion-data:/app/data
+  twilio-mcp:
+    build:
+      context: ./mcp/twilio
+      dockerfile: Dockerfile
+    container_name: twilio-mcp-server
+    environment:
+    - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+    - TWILIO_API_KEY=${TWILIO_API_KEY}
+    - TWILIO_API_SECRET=${TWILIO_API_SECRET}
+    restart: unless-stopped
+    networks:
+    - braid-mcp-network
+    healthcheck:
+      test: *id001
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+    - twilio-data:/app/data
+networks:
+  mcp_network:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.20.0.0/16
+  braid-mcp-network:
+    driver: bridge
+    name: braid-mcp-network
+volumes:
+  notion_data: null
+  notion_cache: null
+  twilio_data: null
+  twilio_cache: null
+  notion-data:
+    driver: local
+  twilio-data:
+    driver: local
+  twilio-cache:
+    driver: local

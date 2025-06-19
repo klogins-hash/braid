@@ -1,0 +1,29 @@
+{
+  "health_monitoring": {
+    "enabled": true,
+    "check_interval": 30,
+    "timeout": 10,
+    "retry_attempts": 3
+  },
+  "mcps": {
+    "notion": {
+      "health_endpoint": "http://notion-mcp-server:3000/health",
+      "metrics_endpoint": "http://notion-mcp-server:3000/metrics"
+    },
+    "twilio": {
+      "health_endpoint": "http://twilio-mcp-server:3000/health",
+      "metrics_endpoint": "http://twilio-mcp-server:3000/metrics"
+    }
+  },
+  "alerting": {
+    "slack_webhook": null,
+    "email_notifications": false,
+    "severity_threshold": "medium"
+  },
+  "logging": {
+    "level": "info",
+    "file": "/app/logs/monitoring.log",
+    "max_size": "100MB",
+    "backup_count": 5
+  }
+}

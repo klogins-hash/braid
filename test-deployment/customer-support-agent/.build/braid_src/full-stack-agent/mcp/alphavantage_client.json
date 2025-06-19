@@ -1,0 +1,27 @@
+{
+  "mcp_id": "alphavantage",
+  "name": "AlphaVantage MCP Server",
+  "category": "finance",
+  "connection": {
+    "type": "docker",
+    "host": "alphavantage-mcp-server",
+    "port": 3003
+  },
+  "authentication": {
+    "type": "api_key",
+    "env_vars": [
+      "ALPHAVANTAGE_API_KEY"
+    ]
+  },
+  "capabilities": [
+    "stock_quotes",
+    "time_series_data",
+    "company_fundamentals",
+    "forex_rates",
+    "crypto_data",
+    "technical_indicators"
+  ],
+  "tool_prefix": "av_",
+  "resource_namespace": "alphavantage",
+  "auto_start": true
+}

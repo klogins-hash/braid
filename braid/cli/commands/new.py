@@ -419,13 +419,17 @@ def _interactive_mcp_selection(suggested_mcps, description, existing_mcps):
         if mcp['mcp_id'] in existing_mcps:
             continue  # Skip already selected MCPs
         
-        confidence_indicator = "🔥" if mcp['confidence'] > 0.9 else "✨" if mcp['confidence'] > 0.8 else "💡"
-        click.echo(f"\n   {confidence_indicator} {mcp['name']} (confidence: {mcp['confidence']:.0%})")
-        click.echo(f"      Category: {mcp.get('category', 'unknown')}")
-        click.echo(f"      Description: {mcp.get('description', 'No description available')}")
+        # Extract MCP data from the discovery result structure
+        mcp_data = mcp.get('mcp_data', mcp)  # Fallback to mcp if mcp_data not found
+        confidence = mcp.get('confidence', 0.5)
         
-        if mcp.get('use_cases'):
-            click.echo(f"      Use cases: {', '.join(mcp['use_cases'][:2])}")
+        confidence_indicator = "🔥" if confidence > 0.9 else "✨" if confidence > 0.8 else "💡"
+        click.echo(f"\n   {confidence_indicator} {mcp_data.get('name', 'Unknown MCP')} (confidence: {confidence:.0%})")
+        click.echo(f"      Category: {mcp_data.get('category', 'unknown')}")
+        click.echo(f"      Description: {mcp_data.get('description', 'No description available')}")
+        
+        if mcp_data.get('use_cases'):
+            click.echo(f"      Use cases: {', '.join(mcp_data['use_cases'][:2])}")
         
         # Show why it was suggested
         if mcp.get('match_reasons'):

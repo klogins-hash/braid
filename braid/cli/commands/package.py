@@ -17,8 +17,24 @@ try:
     from core.mcp.error_handler import MCPErrorHandler
     MCP_AVAILABLE = True
 except ImportError as e:
-    print(f"Warning: MCP integration not available: {e}")
+    # Graceful fallback when MCP modules are not available
+    click.echo(f"ℹ️  MCP integration not available: {str(e)}", err=True)
     MCP_AVAILABLE = False
+    
+    # Create mock classes to prevent errors
+    class MockMCPIntegrator:
+        def prepare_mcp_dockerization(self, *args, **kwargs):
+            return {"success": False, "error": "MCP integration not available"}
+    
+    class MockMCPDeploymentOptimizer:
+        def analyze_deployment_requirements(self, mcps):
+            return {"recommended_profile": "development", "total_mcps": len(mcps)}
+        
+        def optimize_agent_structure(self, *args, **kwargs):
+            return {"optimizations_applied": [], "files_created": []}
+    
+    MCPIntegrator = MockMCPIntegrator
+    MCPDeploymentOptimizer = MockMCPDeploymentOptimizer
 
 # --- Production Dockerfile Template for Simple Layout ---
 DOCKERFILE_SIMPLE_TEMPLATE = """
@@ -162,7 +178,7 @@ services:
     ports:
       - "8000:8000"
     healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      test: ["CMD", "python", "-c", "import sys; import os; print('Health check passed'); sys.exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3

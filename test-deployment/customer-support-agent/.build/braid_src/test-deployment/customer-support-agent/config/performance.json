@@ -1,0 +1,32 @@
+{
+  "profile": "production",
+  "resource_limits": {
+    "memory": "1g",
+    "cpu": "1.0"
+  },
+  "optimization": {
+    "parallel_processing": false,
+    "connection_pooling": true,
+    "request_batching": true,
+    "caching_enabled": true,
+    "compression": true
+  },
+  "timeouts": {
+    "mcp_connection": 60,
+    "tool_execution": 120,
+    "health_check": 10
+  },
+  "retry_policy": {
+    "max_attempts": 5,
+    "backoff_strategy": "exponential",
+    "base_delay": 1.0,
+    "max_delay": 60.0
+  },
+  "scaling": {
+    "auto_scaling": false,
+    "min_replicas": 1,
+    "max_replicas": 3,
+    "cpu_threshold": 80,
+    "memory_threshold": 85
+  }
+}
