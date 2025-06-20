@@ -27,23 +27,23 @@ from langgraph.graph.message import add_messages
 # Load environment variables
 load_dotenv()
 
-# Import direct API integrations (now fixed in core)
-from core.integrations.xero.tools import (
+# Import direct API integrations (organized by category)
+from core.integrations.finance.xero.tools import (
     get_xero_profit_and_loss,
     get_xero_balance_sheet,
     get_xero_trial_balance
 )
-from core.integrations.notion.tools import (
+from core.integrations.productivity.notion.tools import (
     create_notion_page,
     get_notion_page,
     update_notion_page
 )
-from core.integrations.perplexity.tools import (
+from core.integrations.productivity.perplexity.tools import (
     perplexity_market_research,
     perplexity_research,
     perplexity_ask
 )
-from core.integrations.slack.tools import get_slack_tools
+from core.integrations.communication.slack.tools import get_slack_tools
 
 # --- Agent State ---
 class FinancialAgentState(TypedDict):
