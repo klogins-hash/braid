@@ -28,6 +28,15 @@ class Config:
     NOTION_API_KEY: str = os.getenv("NOTION_API_KEY", "")
     NOTION_DEFAULT_PAGE_ID: Optional[str] = os.getenv("NOTION_DEFAULT_PAGE_ID")
     
+    # Glama.ai Gateway
+    GLAMA_API_KEY: str = os.getenv("GLAMA_API_KEY", "")
+    GLAMA_BASE_URL: str = os.getenv("GLAMA_BASE_URL", "https://glama.ai/api/gateway/v1")
+    
+    # Glama Hosted MCP - Xero Server
+    GLAMA_XERO_MCP_URL: str = os.getenv("GLAMA_XERO_MCP_URL", "https://glama.ai/mcp/instances/olcyconirl/sse?token=e459cf7d-3a64-45ac-9d8a-f02be49dc3a9")
+    GLAMA_XERO_CLIENT_ID: str = os.getenv("GLAMA_XERO_CLIENT_ID", "D86AC92924E348DC9427685171886E0D") 
+    GLAMA_XERO_SECRET_ID: str = os.getenv("GLAMA_XERO_SECRET_ID", "9q-8usOQ3XFpss0dv7DjjoTmutXGEm58tXZmS_NYTRno9938")
+    
     # LangSmith Tracing
     LANGCHAIN_TRACING_V2: bool = os.getenv("LANGCHAIN_TRACING_V2", "true").lower() == "true"
     LANGCHAIN_PROJECT: str = os.getenv("LANGCHAIN_PROJECT", "financial-forecast-agent-mcp")
