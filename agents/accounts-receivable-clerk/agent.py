@@ -10,38 +10,52 @@ Features:
 - Multi-stage escalation with email, SMS, and Slack notifications
 """
 import os
-import json
 import logging
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Annotated, TypedDict, Optional
+from typing import List, Dict, Any, Annotated, TypedDict
 from dotenv import load_dotenv
 
 from langchain_core.messages import (
-    AnyMessage, BaseMessage, HumanMessage, AIMessage, ToolMessage
+    AnyMessage, HumanMessage, AIMessage, ToolMessage
 )
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 
 # Load environment variables
 load_dotenv()
 
-# Import direct API integrations
-from core.integrations.finance.xero.tools import (
-    get_xero_profit_and_loss,
-    get_xero_balance_sheet,
-    get_xero_trial_balance
-)
-from core.integrations.productivity.gworkspace.tools import (
-    gmail_send_email,
-    google_calendar_list_events
-)
-from core.integrations.productivity.perplexity.tools import (
-    perplexity_ask,
-    perplexity_research
-)
-from core.integrations.communication.slack.tools import get_slack_tools
+# Import specialized AR tools
+from xero_tools import get_xero_ar_tools
+from contract_tools import get_contract_tools
+from collections_tools import get_collections_tools
+
+# Import core integrations for supplementary functionality
+try:
+    import sys
+    sys.path.append('/Users/chasehughes/Documents/Github-hughes7370/braid-ink/braid')
+    from core.integrations.productivity.perplexity.tools import (
+        perplexity_ask,
+        perplexity_research
+    )
+    from core.integrations.communication.slack.tools import get_slack_tools
+    print("✅ Core integrations imported successfully")
+except ImportError as e:
+    print(f"⚠️ Core integrations not available: {e}")
+    # Create mock tools for testing
+    def mock_tool(name):
+        from langchain_core.tools import tool
+        @tool(name)
+        def mock_func(query: str) -> str:
+            return f"Mock {name} result for: {query}"
+        return mock_func
+    
+    perplexity_ask = mock_tool("perplexity_ask")
+    perplexity_research = mock_tool("perplexity_research")
+    
+    def get_slack_tools():
+        return [mock_tool("slack_post_message")]
 
 # --- Agent State ---
 class ARClerkState(TypedDict):
@@ -55,22 +69,22 @@ class ARClerkState(TypedDict):
     error_messages: List[str]               # Error tracking
 
 # --- Tool Setup ---
-ar_tools = [
-    # Xero financial tools (using existing integrations)
-    get_xero_profit_and_loss,
-    get_xero_balance_sheet,
-    get_xero_trial_balance,
-    
-    # Document processing and communication
-    gmail_send_email,
-    google_calendar_list_events,
+# Get specialized AR tools
+xero_ar_tools = get_xero_ar_tools()
+contract_tools = get_contract_tools()
+collections_tools = get_collections_tools()
+
+# Add supplementary tools
+supplementary_tools = [
     perplexity_ask,
     perplexity_research
 ]
 
 # Add Slack tools
 slack_tools = get_slack_tools()
-all_tools = ar_tools + slack_tools
+
+# Combine all tools
+all_tools = xero_ar_tools + contract_tools + collections_tools + supplementary_tools + slack_tools
 tool_map = {tool.name: tool for tool in all_tools}
 
 # --- Model Setup ---
@@ -174,8 +188,8 @@ def monitor_contracts_node(state: ARClerkState) -> ARClerkState:
     }
 
 def extract_contract_data_node(state: ARClerkState) -> ARClerkState:
-    """Extract contract data using AI document parsing."""
-    print("🔍 Extracting contract data using AI parsing...")
+    """Extract contract data using specialized contract parsing tools."""
+    print("🔍 Extracting contract data using specialized AI parsing...")
     
     # Get the user's contract information
     last_message = None
@@ -190,39 +204,19 @@ def extract_contract_data_node(state: ARClerkState) -> ARClerkState:
             "error_messages": ["No contract content to process"]
         }
     
-    # Use Perplexity to help structure contract data extraction
-    extraction_prompt = f"""
-    Please help extract key billing information from this contract description:
-    
-    {last_message}
-    
-    Extract and structure the following information in JSON format:
-    - client_name: Company/individual name
-    - contact_email: Billing contact email
-    - service_description: What services/products are being provided
-    - total_value: Total contract amount (number only)
-    - billing_terms: Payment terms (e.g., "Net 30", "50% upfront")
-    - payment_schedule: When payments are due
-    - contract_start_date: Start date if mentioned
-    
-    If any information is missing, indicate "not specified".
-    """
-    
     try:
-        # Simulate contract data extraction
-        # In production, this would use document parsing tools
-        contract_data = {
-            "client_name": "Sample Client Corp",
-            "contact_email": "billing@sampleclient.com",
-            "service_description": "Web development services",
-            "total_value": 10000.00,
-            "billing_terms": "Net 30",
-            "payment_schedule": "Monthly invoicing",
-            "contract_start_date": current_date,
-            "extraction_source": "AI parsing simulation"
-        }
+        # Use the specialized extract_contract_data tool
+        from contract_tools import extract_contract_data
+        contract_result = extract_contract_data.invoke({
+            "contract_text": last_message,
+            "client_context": None
+        })
         
-        print(f"✅ Contract data extracted: {contract_data['client_name']} - ${contract_data['total_value']:,.2f}")
+        # Parse the result
+        import json
+        contract_data = json.loads(contract_result)
+        
+        print(f"✅ Contract data extracted: {contract_data.get('client_name', 'Unknown')} - ${contract_data.get('total_value', 0):,.2f}")
         
         return {
             **state,
@@ -319,7 +313,7 @@ def tools_node(state: ARClerkState) -> ARClerkState:
     }
 
 def create_client_invoice_node(state: ARClerkState) -> ARClerkState:
-    """Create Xero client and generate initial invoice."""
+    """Create Xero client and generate initial invoice using specialized tools."""
     print("💼 Creating client and invoice in Xero...")
     
     contract_data = state.get("contract_data", {})
@@ -329,40 +323,101 @@ def create_client_invoice_node(state: ARClerkState) -> ARClerkState:
             "error_messages": ["No contract data available for client creation"]
         }
     
-    # Simulate Xero client and invoice creation
-    # In production, this would use actual Xero API calls
-    
-    client_info = {
-        "xero_contact_id": "12345-sample-id",
-        "client_name": contract_data.get("client_name"),
-        "contact_email": contract_data.get("contact_email"),
-        "created_date": current_date,
-        "status": "active"
-    }
-    
-    # Generate invoice based on billing terms
-    invoice_data = {
-        "invoice_id": "INV-001-2025",
-        "client_id": client_info["xero_contact_id"],
-        "amount": contract_data.get("total_value", 0),
-        "due_date": (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d"),
-        "status": "draft",
-        "billing_terms": contract_data.get("billing_terms"),
-        "created_date": current_date
-    }
-    
-    print(f"✅ Client created: {client_info['client_name']}")
-    print(f"✅ Invoice generated: {invoice_data['invoice_id']} for ${invoice_data['amount']:,.2f}")
-    
-    return {
-        **state,
-        "client_info": client_info,
-        "invoice_schedule": [invoice_data],
-        "current_action": "monitor_payments"
-    }
+    try:
+        import json
+        from xero_tools import check_xero_contact, create_xero_contact, create_xero_invoice
+        
+        client_name = contract_data.get("client_name", "")
+        contact_email = contract_data.get("contact_email", "")
+        total_value = contract_data.get("total_value", 0)
+        billing_terms = contract_data.get("billing_terms", "Net 30")
+        
+        # Check if client exists
+        contact_check_result = check_xero_contact.invoke({"name": client_name})
+        contact_check = json.loads(contact_check_result)
+        
+        if contact_check.get("found"):
+            # Use existing contact
+            contact_id = contact_check["contact_id"]
+            print(f"✅ Using existing Xero contact: {client_name}")
+        else:
+            # Create new contact
+            contact_create_result = create_xero_contact.invoke({
+                "name": client_name,
+                "email": contact_email
+            })
+            contact_create = json.loads(contact_create_result)
+            
+            if contact_create.get("success"):
+                contact_id = contact_create["contact_id"]
+                print(f"✅ Created new Xero contact: {client_name}")
+            else:
+                return {
+                    **state,
+                    "error_messages": [f"Failed to create Xero contact: {contact_create.get('message', 'Unknown error')}"]
+                }
+        
+        # Create invoice
+        due_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+        if "net 60" in billing_terms.lower():
+            due_date = (datetime.now() + timedelta(days=60)).strftime("%Y-%m-%d")
+        elif "net 90" in billing_terms.lower():
+            due_date = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
+        
+        invoice_create_result = create_xero_invoice.invoke({
+            "contact_id": contact_id,
+            "description": contract_data.get("service_description", "Professional services"),
+            "amount": total_value,
+            "due_date": due_date
+        })
+        invoice_create = json.loads(invoice_create_result)
+        
+        if invoice_create.get("success"):
+            # Store successful creation
+            client_info = {
+                "xero_contact_id": contact_id,
+                "client_name": client_name,
+                "contact_email": contact_email,
+                "created_date": current_date,
+                "status": "active"
+            }
+            
+            invoice_data = {
+                "invoice_id": invoice_create["invoice_id"],
+                "invoice_number": invoice_create["invoice_number"],
+                "client_id": contact_id,
+                "amount": total_value,
+                "due_date": due_date,
+                "status": invoice_create["status"],
+                "billing_terms": billing_terms,
+                "created_date": current_date
+            }
+            
+            print(f"✅ Invoice created: {invoice_create['invoice_number']} for ${total_value:,.2f}")
+            
+            return {
+                **state,
+                "client_info": client_info,
+                "invoice_schedule": [invoice_data],
+                "current_action": "monitor_payments"
+            }
+        else:
+            return {
+                **state,
+                "error_messages": [f"Failed to create invoice: {invoice_create.get('message', 'Unknown error')}"]
+            }
+            
+    except Exception as e:
+        error_msg = f"Error creating client/invoice: {str(e)}"
+        print(f"❌ {error_msg}")
+        return {
+            **state,
+            "error_messages": state.get("error_messages", []) + [error_msg],
+            "current_action": "error_handling"
+        }
 
 def monitor_payments_node(state: ARClerkState) -> ARClerkState:
-    """Monitor invoice payments and trigger collections if overdue."""
+    """Monitor invoice payments and trigger collections if overdue using specialized tools."""
     print("💰 Monitoring payment status...")
     
     invoice_schedule = state.get("invoice_schedule", [])
@@ -372,41 +427,88 @@ def monitor_payments_node(state: ARClerkState) -> ARClerkState:
             "error_messages": ["No invoices to monitor"]
         }
     
-    # Check payment status for each invoice
-    collection_status = {}
-    
-    for invoice in invoice_schedule:
-        invoice_id = invoice.get("invoice_id")
-        due_date = datetime.strptime(invoice.get("due_date"), "%Y-%m-%d")
-        days_overdue = (datetime.now() - due_date).days
+    try:
+        import json
+        from xero_tools import check_invoice_payments
         
-        if days_overdue > 0:
-            print(f"⚠️ Invoice {invoice_id} is {days_overdue} days overdue")
+        # Check payment status using Xero API
+        payment_check_result = check_invoice_payments.invoke({
+            "days_overdue": 0  # Check all invoices
+        })
+        payment_check = json.loads(payment_check_result)
+        
+        if payment_check.get("success"):
+            overdue_invoices = payment_check.get("overdue_invoices", [])
+            collection_status = {}
             
-            # Determine collection stage
-            if days_overdue >= 30:
-                stage = "stage_3_escalate"
-            elif days_overdue >= 14:
-                stage = "stage_2_sms"
-            elif days_overdue >= 7:
-                stage = "stage_1_email"
+            for overdue in overdue_invoices:
+                invoice_id = overdue.get("invoice_id")
+                days_overdue = overdue.get("days_overdue", 0)
+                
+                print(f"⚠️ Invoice {overdue.get('invoice_number')} is {days_overdue} days overdue")
+                
+                # Determine collection stage
+                if days_overdue >= 30:
+                    stage = "stage_3_escalate"
+                elif days_overdue >= 14:
+                    stage = "stage_2_sms"
+                elif days_overdue >= 7:
+                    stage = "stage_1_email"
+                else:
+                    stage = "monitoring"
+                
+                collection_status[invoice_id] = {
+                    "invoice_number": overdue.get("invoice_number"),
+                    "client_name": overdue.get("contact_name"),
+                    "amount_due": overdue.get("amount_due"),
+                    "days_overdue": days_overdue,
+                    "collection_stage": stage,
+                    "last_contact": None,
+                    "escalation_needed": days_overdue >= 30
+                }
+            
+            total_overdue = payment_check.get("total_overdue_amount", 0)
+            if collection_status:
+                print(f"📊 Total overdue: ${total_overdue:,.2f} across {len(collection_status)} invoices")
             else:
-                stage = "monitoring"
+                print("✅ No overdue invoices found")
             
-            collection_status[invoice_id] = {
-                "days_overdue": days_overdue,
-                "collection_stage": stage,
-                "last_contact": None,
-                "escalation_needed": days_overdue >= 30
+            return {
+                **state,
+                "collection_status": collection_status,
+                "current_action": "collections_workflow" if collection_status else "monitoring"
             }
         else:
-            print(f"✅ Invoice {invoice_id} is current (due in {abs(days_overdue)} days)")
-    
-    return {
-        **state,
-        "collection_status": collection_status,
-        "current_action": "collections_workflow" if collection_status else "monitoring"
-    }
+            # Fallback to local calculation
+            collection_status = {}
+            for invoice in invoice_schedule:
+                invoice_id = invoice.get("invoice_id")
+                due_date = datetime.strptime(invoice.get("due_date"), "%Y-%m-%d")
+                days_overdue = (datetime.now() - due_date).days
+                
+                if days_overdue > 0:
+                    stage = "stage_3_escalate" if days_overdue >= 30 else "stage_2_sms" if days_overdue >= 14 else "stage_1_email"
+                    collection_status[invoice_id] = {
+                        "days_overdue": days_overdue,
+                        "collection_stage": stage,
+                        "amount_due": invoice.get("amount", 0),
+                        "escalation_needed": days_overdue >= 30
+                    }
+            
+            return {
+                **state,
+                "collection_status": collection_status,
+                "current_action": "collections_workflow" if collection_status else "monitoring"
+            }
+            
+    except Exception as e:
+        error_msg = f"Error monitoring payments: {str(e)}"
+        print(f"❌ {error_msg}")
+        return {
+            **state,
+            "error_messages": state.get("error_messages", []) + [error_msg],
+            "current_action": "error_handling"
+        }
 
 def should_continue(state: ARClerkState) -> str:
     """Determine next workflow step."""
@@ -463,13 +565,23 @@ def create_ar_clerk_agent():
     
     return workflow.compile()
 
-# Initialize the graph
-graph = create_ar_clerk_agent()
+# Initialize the graph (with error handling for imports)
+try:
+    graph = create_ar_clerk_agent()
+    print(f"✅ AR Clerk graph initialized with {len(all_tools)} tools")
+except Exception as e:
+    print(f"❌ Error initializing AR Clerk graph: {e}")
+    graph = None
 
 # --- Main Execution ---
 def main():
     """Interactive execution for the Accounts Receivable Clerk."""
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    
+    # Check if graph was initialized properly
+    if graph is None:
+        print("❌ Agent graph not initialized. Please check dependencies and imports.")
+        return
     
     # Check required environment variables
     required_vars = [

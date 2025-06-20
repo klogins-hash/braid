@@ -49,7 +49,11 @@ def get_xero_headers() -> Dict[str, str]:
         "Content-Type": "application/json"
     }
 
-@tool("check_xero_contact", args_schema=BaseModel)
+class ContactSearchInput(BaseModel):
+    """Input schema for searching Xero contacts."""
+    name: str = Field(description="Client name to search for")
+
+@tool("check_xero_contact", args_schema=ContactSearchInput)
 def check_xero_contact(name: str) -> str:
     """Check if a contact exists in Xero by name."""
     try:

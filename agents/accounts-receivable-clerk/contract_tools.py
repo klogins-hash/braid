@@ -378,7 +378,11 @@ def analyze_billing_terms(terms_text: str, total_amount: float) -> str:
         
         return json.dumps(fallback_analysis, indent=2)
 
-@tool("validate_contract_data", args_schema=BaseModel)
+class ContractValidationInput(BaseModel):
+    """Input schema for contract data validation."""
+    contract_data: str = Field(description="JSON string containing contract data to validate")
+
+@tool("validate_contract_data", args_schema=ContractValidationInput)
 def validate_contract_data(contract_data: str) -> str:
     """Validate extracted contract data for completeness and accuracy."""
     try:
