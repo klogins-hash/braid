@@ -2,209 +2,173 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-Braid is a comprehensive toolkit designed for building sophisticated LangGraph agents through AI-powered development. Instead of wrestling with complex setup and configuration, you work directly with Claude Code to create production-ready agents in minutes.
+**Build sophisticated AI agents through natural conversation with Claude Code. No templates, no complex setup - just describe what you want and get production-ready agents in minutes.**
 
-## Why Braid?
+## ⚡ **Simple as 1-2-3**
 
-| Dimension | Traditional No-Code | Manual Coding | Braid + Claude Code |
-| :--- | :--- | :--- | :--- |
-| **Setup Time** | Minutes, limited scope | Hours/Days of boilerplate | Minutes, any complexity |
-| **Customization** | Limited to presets | Full control, high effort | Full control, AI-assisted |
-| **Production Ready** | Basic deployment | Complex infrastructure setup | Enterprise-grade packaging |
-| **Debugging** | Black box flows | Manual instrumentation | Built-in observability |
-| **Integration** | Preset connectors only | Build everything yourself | 40+ tools + direct API integrations |
-
-## What You Get
-
-Braid provides everything needed for professional agent development:
-
-- **🏗️ Agent Architecture**: Production-ready LangGraph patterns
-- **🛠️ 40+ Tools**: Google Workspace, Slack, data processing, APIs, workflows
-- **🔌 Direct Integrations**: Perplexity, Xero, Notion, Google Workspace, Slack  
-- **💾 Memory Systems**: Persistent conversations, RAG, vector storage
-- **📦 Production Deployment**: Docker, Kubernetes, monitoring, security
-- **🧪 Testing Framework**: Unit tests, integration tests, debugging tools
-
-## How It Works
-
-**You don't use CLIs or write boilerplate.** You work with Claude Code to build agents through natural conversation:
-
-### Step 1: Prepare Claude Code
 ```
-"Please prepare to create a LangGraph agent by reading your development guide."
+1. "Please prepare to create a LangGraph agent by reviewing the docs and examples"
+2. "I need an agent that [describes what you want it to do]"  
+3. "Optional Pro Pack and production deployment" (for enterprise features)
 ```
 
-Claude Code will read [CLAUDE_CODE_GUIDE.md](docs/getting-started/CLAUDE_CODE_GUIDE.md) and understand the full system.
+**That's it.** Claude Code handles all the complexity - architecture, integrations, testing, deployment.
 
-### Step 2: Define Your Agent Requirements
+## 🎯 **What You Get**
 
-Fill out the [agent-creator-template.md](docs/guides/agent-development/agent-creator-template.md) with your requirements:
+**🤖 Production-Ready Agents**
+- LangGraph workflows with proper observability
+- Built-in error handling and fallbacks
+- Enterprise-grade security and monitoring
 
-```markdown
-## Core Tasks and Sequences of Agent
-**Your Requirements**: 
-I need an agent that monitors customer support tickets, analyzes sentiment, 
-and posts daily summaries to Slack with trend data in Google Sheets.
+**🔌 40+ Pre-Built Integrations**  
+- Google Workspace, Slack, Xero, Notion, Perplexity
+- Financial data, web research, document generation
+- Team communication, data processing, workflows
 
-## Tools & Integrations Required
-**Your Required Tools & Integrations**: 
-[Claude Code will recommend optimal combinations]
+**📦 Complete Deployment**
+- Docker containers with optimized configurations
+- Monitoring, logging, and health checks
+- Kubernetes manifests (when needed)
+
+## 💬 **Real Examples**
+
+### **Customer Support Intelligence Agent**
+```
+User: "I need an agent that monitors customer support tickets, analyzes sentiment, 
+      and posts daily summaries to Slack with trend data in Google Sheets."
+
+Claude Code: [Reviews docs] → [Creates agent with HTTP tools, sentiment analysis, 
+             Slack integration, Google Sheets automation] → [Production ready]
 ```
 
-### Step 3: Create Your Agent
+### **Financial Forecasting Agent**
 ```
-"Please read my agent requirements and create the agent."
-```
+User: "I need an agent that pulls Xero financial data, does market research, 
+      creates 5-year forecasts, and generates professional reports in Notion."
 
-Claude Code will:
-- Analyze your requirements
-- Select optimal tools and integrations
-- Create production-ready agent structure
-- Set up all configurations and dependencies
-- Provide testing and deployment instructions
-
-### Step 4: Enhance with Pro Pack (Optional)
-```
-"Please add the Braid Pro Pack for enhanced testing and monitoring."
+Claude Code: [Reviews docs] → [Creates agent with Xero integration, Perplexity research, 
+             financial modeling, Notion reporting] → [Production ready]
 ```
 
-This adds:
-- Advanced unit test suites
-- Integration test frameworks
-- Performance monitoring
-- Error handling enhancements
-- Development workflows
-
-### Step 5: Prepare for Deployment
+### **Research & Analysis Agent**
 ```
-"Please prepare this agent for production deployment."
+User: "I need an agent that researches topics using web search, analyzes the data, 
+      creates comprehensive reports, and shares findings with my team."
+
+Claude Code: [Reviews docs] → [Creates agent with Perplexity integration, data analysis, 
+             report generation, team sharing] → [Production ready]
 ```
 
-Claude Code will:
-- Package with optimized Docker containers
-- Set up production monitoring
-- Create deployment documentation
-- Configure security hardening
-- Generate Kubernetes manifests (if needed)
+## 🚀 **Getting Started**
 
-## Available Capabilities
-
-### 🛠️ Built-in Tools
-- **Google Workspace**: Gmail, Calendar, Sheets, Drive
-- **Slack**: Messaging, notifications, file sharing (12 tools)
-- **Data Processing**: CSV, file operations, ETL transformations
-- **Web Integration**: HTTP APIs, web scraping
-- **Workflow Control**: Scheduling, delays, sub-processes
-- **Code Execution**: Python, JavaScript runtime
-
-### 🔌 Direct API Integrations
-- **Perplexity**: Real-time web research and search
-- **Xero**: Financial accounting and business data  
-- **Notion**: Workspace and knowledge management
-- **Google Workspace**: Gmail, Calendar, Sheets, Drive
-- **Slack**: Team messaging and notifications
-
-> **🎯 Simple Integration**: Braid provides direct API integrations with simple Python imports. No complex setup required - just configure your API keys and start building.
-
-### 🏗️ Agent Patterns
-- **ReAct Agents**: Tool-using conversational agents
-- **Multi-Step Workflows**: Complex business processes
-- **Memory-Enabled**: Persistent conversations
-- **RAG-Powered**: Document-aware agents
-- **Multi-Agent Systems**: Orchestrated agent teams
-
-## Real Examples
-
-### Customer Support Agent
-```
-Requirements: Monitor tickets → Analyze sentiment → Daily Slack reports + Google Sheets trends
-Tools: http, transform, slack, gworkspace
-Result: Complete automated support intelligence system
-```
-
-### Research & Analysis Agent  
-```
-Requirements: Search topics → Generate insights → Create reports → Share with team
-Tools: http, files + Integrations: perplexity, notion
-Result: AI-powered research assistant
-```
-
-### Data Processing Pipeline
-```
-Requirements: Fetch API data → Clean & analyze → Generate reports → Notify stakeholders
-Tools: http, transform, csv, files, slack
-Result: Automated data intelligence pipeline
-```
-
-## Getting Started
-
-### Prerequisites
+### **Prerequisites**
 - Python 3.11+ installed
 - Access to Claude Code
-- API keys for desired integrations (OpenAI, Slack, etc.)
+- API keys for desired services (OpenAI, Slack, etc.)
 
-### Setup
+### **Setup (30 seconds)**
 ```bash
-# Clone the repository
 git clone <repository-url>
 cd braid
-
-# Set up environment
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -e .
 ```
 
-### Start Building
-1. **Ask Claude Code to prepare**: "Please prepare to create a LangGraph agent"
-2. **Fill out requirements**: Use [agent-creator-template.md](docs/guides/agent-development/agent-creator-template.md)  
-3. **Create your agent**: "Please read my requirements and create the agent"
-4. **Enhance & deploy**: Optional Pro Pack and production deployment
+### **Build Your First Agent**
+1. **Tell Claude Code to prepare:**
+   ```
+   "Please prepare to create a LangGraph agent by reviewing the docs and examples"
+   ```
 
-## Documentation
+2. **Describe what you want:**
+   ```
+   "I need an agent that [your specific requirements]"
+   ```
+   
+   Be specific about:
+   - What the agent should do
+   - Which systems it should integrate with
+   - What outputs you need
+   - Any specific workflows
 
-**📚 [Complete Documentation Hub](docs/README.md)** - Organized navigation for all guides and references
+3. **Add enterprise features** (optional):
+   ```
+   "Optional Pro Pack and production deployment"
+   ```
 
-**🚀 Quick Access**:
-- **[Getting Started](docs/getting-started/)** - Quick start and Claude Code integration
-- **[Development Guides](docs/guides/)** - Agent development, API integrations, troubleshooting
-- **[Tutorials](docs/tutorials/)** - Step-by-step LangGraph learning path
-- **[Reference](docs/reference/)** - Tool capabilities and CLI usage
+## 🛠️ **What's Available**
 
-**⭐ Essential for Complex Agents**:
-- **[Agent Development Best Practices](docs/guides/agent-development/AGENT_DEVELOPMENT_BEST_PRACTICES.md)** - Prevents LangSmith tracing issues
-- **[Live API Integration Checklist](docs/guides/api-integrations/LIVE_API_INTEGRATION_CHECKLIST.md)** - Pre-development checklist
-- **[Production Templates](templates/)** - Battle-tested patterns from real projects
+### **Core Integrations**
+| Service | Capabilities | Use Cases |
+|---------|-------------|-----------|
+| **🔍 Perplexity** | Real-time web research | Market analysis, trend research, competitive intelligence |
+| **💰 Xero** | Financial & accounting data | Revenue forecasting, expense analysis, financial reporting |
+| **📄 Notion** | Document & workspace management | Report generation, knowledge management, documentation |
+| **📧 Google Workspace** | Gmail, Calendar, Sheets, Drive | Email automation, scheduling, data management |
+| **💬 Slack** | Team messaging & notifications | Alerts, team updates, workflow notifications |
 
-## What Makes Braid Different
+### **40+ Built-in Tools**
+- **Data Processing**: CSV handling, file operations, data transformations
+- **Web Integration**: HTTP APIs, web scraping, data fetching  
+- **Workflow Control**: Scheduling, delays, conditional logic
+- **Communication**: Email sending, message posting, file sharing
+- **Analysis**: Data aggregation, reporting, insights generation
 
-### Traditional Approach
-```
-1. Learn LangGraph concepts (weeks)
-2. Set up project structure (hours)  
-3. Configure tools and integrations (days)
-4. Write boilerplate code (hours)
-5. Set up testing framework (hours)
-6. Configure deployment (days)
-7. Debug and iterate (weeks)
-```
+### **Agent Patterns**
+- **🔄 ReAct Agents**: Reasoning and action cycles
+- **📋 Multi-Step Workflows**: Complex business processes
+- **🧠 Memory-Enabled**: Conversation history and context
+- **📚 RAG-Powered**: Document search and retrieval
+- **🤝 Multi-Agent**: Coordinated agent teams
 
-### Braid + Claude Code
-```
-1. Describe what you want (minutes)
-2. Get production-ready agent (minutes)
-3. Test and iterate (minutes)
-4. Deploy to production (minutes)
-```
+## 🆚 **Why Choose Braid?**
 
-## Enterprise Features
+### **Traditional AI Development**
+- ❌ Weeks learning LangGraph concepts
+- ❌ Hours setting up project structure  
+- ❌ Days configuring integrations
+- ❌ Complex deployment processes
+- ❌ Manual testing and debugging
 
-- **Security**: Non-root containers, secret management, network isolation
-- **Monitoring**: Health checks, metrics collection, error tracking
-- **Scalability**: Kubernetes support, resource optimization, auto-scaling ready
-- **Reliability**: Circuit breakers, retry logic, graceful degradation
-- **Observability**: LangSmith integration, detailed tracing, performance monitoring
+### **Braid + Claude Code**
+- ✅ **Minutes** to production-ready agents
+- ✅ **Natural language** requirements
+- ✅ **Built-in** integrations and tools
+- ✅ **Automatic** testing and deployment
+- ✅ **Enterprise-grade** from day one
+
+## 🏢 **Enterprise Ready**
+
+**Security & Compliance**
+- Non-root containers, secret management, network isolation
+- Audit logging, access controls, data encryption
+
+**Monitoring & Observability**  
+- Health checks, metrics collection, error tracking
+- LangSmith integration, detailed tracing, performance monitoring
+
+**Scalability & Reliability**
+- Kubernetes support, auto-scaling, resource optimization
+- Circuit breakers, retry logic, graceful degradation
+
+## 📚 **Need Help?**
+
+- **📖 [Complete Documentation](docs/README.md)** - Comprehensive guides and references
+- **🎓 [Tutorials](docs/tutorials/)** - Step-by-step learning paths
+- **⚡ [Quick Reference](docs/reference/AGENT_DEVELOPMENT_COMMANDS.md)** - Essential commands
 
 ---
 
-**🚀 Ready to build sophisticated AI agents?** Start by asking Claude Code to prepare for agent development, then describe what you want to build.
+## 🚀 **Ready to Start?**
+
+**No complex setup. No templates. No learning curve.**
+
+Just tell Claude Code what you want:
+
+```
+"Please prepare to create a LangGraph agent by reviewing the docs and examples"
+```
+
+Then describe your agent and watch it come to life. **It's that simple.**

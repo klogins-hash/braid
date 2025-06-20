@@ -2,6 +2,16 @@
 
 This file provides essential guidance for Claude when working on Braid projects, focusing on creating custom LangGraph agents using our built-in toolkit and integrations.
 
+## 🎯 **STRUCTURED AGENT DEVELOPMENT PROCESS**
+
+**When users request agent development, follow the [Agent Development Roadmap](CLAUDE_AGENT_DEVELOPMENT_ROADMAP.md) for consistent, high-quality results.**
+
+### **Trigger Commands**
+- **"Please prepare to create a LangGraph agent by reviewing the docs and examples"** → Execute Phase 1: Discovery & Planning
+- **"Optional Pro Pack and production deployment"** → Execute Phase 2: Production Enhancement
+
+These commands ensure systematic review of all critical documentation, proper template selection, and adherence to production best practices.
+
 ## 🚀 Creating New Agents with Direct API Integrations
 
 **Primary Approach**: Use direct API integrations from `core/integrations/` for all new agents. This provides simple, reliable access to external services.
