@@ -1,1 +1,0 @@
-"""Integration tests for financial_forecast_agent."""
