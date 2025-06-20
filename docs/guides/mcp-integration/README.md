@@ -1,6 +1,17 @@
-# MCP Integration Documentation Hub
+# MCP Integration Documentation Hub (ARCHIVED)
 
-Complete documentation for Model Context Protocol (MCP) integration in Braid agents.
+⚠️ **IMPORTANT NOTICE**: MCP integration has been archived in favor of direct API integrations.
+
+**For new agents, use direct integrations from `core/integrations/` instead:**
+- `core/integrations/xero/tools.py` - Direct Xero API integration
+- `core/integrations/notion/tools.py` - Direct Notion API integration  
+- `core/integrations/perplexity/tools.py` - Direct Perplexity API integration
+
+**See [CLAUDE.md](../../CLAUDE.md) for current direct integration patterns.**
+
+---
+
+**Historical Documentation Below** - Model Context Protocol (MCP) integration in Braid agents.
 
 ## 📋 Quick Reference for Claude
 

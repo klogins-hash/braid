@@ -12,7 +12,7 @@ Braid is a comprehensive toolkit designed for building sophisticated LangGraph a
 | **Customization** | Limited to presets | Full control, high effort | Full control, AI-assisted |
 | **Production Ready** | Basic deployment | Complex infrastructure setup | Enterprise-grade packaging |
 | **Debugging** | Black box flows | Manual instrumentation | Built-in observability |
-| **Integration** | Preset connectors only | Build everything yourself | 40+ tools + 6 MCPs ready |
+| **Integration** | Preset connectors only | Build everything yourself | 40+ tools + direct API integrations |
 
 ## What You Get
 
@@ -20,7 +20,7 @@ Braid provides everything needed for professional agent development:
 
 - **🏗️ Agent Architecture**: Production-ready LangGraph patterns
 - **🛠️ 40+ Tools**: Google Workspace, Slack, data processing, APIs, workflows
-- **🔌 7 MCPs**: Perplexity, Xero, Notion, MongoDB, AgentQL, AlphaVantage, Twilio  
+- **🔌 Direct Integrations**: Perplexity, Xero, Notion, Google Workspace, Slack  
 - **💾 Memory Systems**: Persistent conversations, RAG, vector storage
 - **📦 Production Deployment**: Docker, Kubernetes, monitoring, security
 - **🧪 Testing Framework**: Unit tests, integration tests, debugging tools
@@ -46,8 +46,8 @@ Fill out the [agent-creator-template.md](docs/guides/agent-development/agent-cre
 I need an agent that monitors customer support tickets, analyzes sentiment, 
 and posts daily summaries to Slack with trend data in Google Sheets.
 
-## Tools & MCPs Required
-**Your Required Tools & MCPs**: 
+## Tools & Integrations Required
+**Your Required Tools & Integrations**: 
 [Claude Code will recommend optimal combinations]
 ```
 
@@ -58,7 +58,7 @@ and posts daily summaries to Slack with trend data in Google Sheets.
 
 Claude Code will:
 - Analyze your requirements
-- Select optimal tools and MCPs
+- Select optimal tools and integrations
 - Create production-ready agent structure
 - Set up all configurations and dependencies
 - Provide testing and deployment instructions
@@ -97,16 +97,14 @@ Claude Code will:
 - **Workflow Control**: Scheduling, delays, sub-processes
 - **Code Execution**: Python, JavaScript runtime
 
-### 🔌 MCP Integrations (Model Context Protocol)
-- **Perplexity**: Real-time web research and search (3 tools)
-- **Xero**: Financial accounting and business data (50+ tools)
-- **Notion**: Workspace and knowledge management (19+ tools)
-- **MongoDB**: Database operations and queries
-- **AgentQL**: Web automation and scraping
-- **AlphaVantage**: Financial market data
-- **Twilio**: SMS, voice, WhatsApp messaging
+### 🔌 Direct API Integrations
+- **Perplexity**: Real-time web research and search
+- **Xero**: Financial accounting and business data  
+- **Notion**: Workspace and knowledge management
+- **Google Workspace**: Gmail, Calendar, Sheets, Drive
+- **Slack**: Team messaging and notifications
 
-> **🎯 MCP-Enabled Development**: Braid includes a complete MCP integration system with automated setup, Docker deployment, and testing frameworks. See [MCP Integration Guide](docs/guides/mcp-integration/MCP_SETUP_GUIDE.md).
+> **🎯 Simple Integration**: Braid provides direct API integrations with simple Python imports. No complex setup required - just configure your API keys and start building.
 
 ### 🏗️ Agent Patterns
 - **ReAct Agents**: Tool-using conversational agents
@@ -127,7 +125,7 @@ Result: Complete automated support intelligence system
 ### Research & Analysis Agent  
 ```
 Requirements: Search topics → Generate insights → Create reports → Share with team
-Tools: http, files + MCPs: perplexity, notion
+Tools: http, files + Integrations: perplexity, notion
 Result: AI-powered research assistant
 ```
 

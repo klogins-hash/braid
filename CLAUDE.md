@@ -1,195 +1,208 @@
 # Claude Assistant Guide for Braid Development
 
-This file provides essential guidance for Claude when working on Braid projects, especially when creating new agents with MCP (Model Context Protocol) integration.
+This file provides essential guidance for Claude when working on Braid projects, focusing on creating custom LangGraph agents using our built-in toolkit and integrations.
 
-## 🚀 Creating New MCP-Enabled Agents
+## 🚀 Creating New Agents with Direct API Integrations
 
-When a user requests a new agent with MCP capabilities, follow this standardized process:
+**Primary Approach**: Use direct API integrations from `core/integrations/` for all new agents. This provides simple, reliable access to external services.
 
-### 1. Read Key MCP Documentation First
+When a user requests a new agent, follow this recommended approach:
 
-**ALWAYS** read these files first to understand the current MCP setup:
+### 1. Use Direct API Integrations
 
-```bash
-# Core MCP documentation - READ THESE FIRST
-docs/guides/mcp-integration/MCP_SETUP_GUIDE.md
-docs/guides/mcp-integration/MCP_DEPLOYMENT_GUIDE.md
-templates/mcp-agent/README.md
-tests/README.md
-```
-
-### 2. Use the MCP Agent Template
-
-Start with the proven template instead of building from scratch:
+**Primary Approach**: Use direct API integrations from `core/integrations/` for all new agents.
 
 ```bash
-# Template location
-templates/mcp-agent/
-├── agent.py              # Main MCP-enabled agent
-├── requirements.txt      # Dependencies  
-├── .env.example         # Environment template
-├── setup_mcp_servers.sh # MCP setup script
-├── test_agent.py       # Testing utilities
-├── Dockerfile          # Container config
-└── README.md           # Usage guide
+# Available direct integrations
+core/integrations/
+├── xero/tools.py         # Direct Xero API integration
+├── notion/tools.py       # Direct Notion API integration  
+├── perplexity/tools.py   # Direct Perplexity API integration
+├── gworkspace/tools.py   # Google Workspace integration
+└── slack/tools.py        # Slack integration
 ```
 
-### 3. Standard MCP Integration Process
+### 2. Standard Direct Integration Process
 
-1. **Copy Template**: `cp -r templates/mcp-agent new-agent-name`
-2. **Review Available MCP Servers**: Check current integrations in `docs/guides/mcp-integration/MCP_SETUP_GUIDE.md`
-3. **Configure Environment**: Use `.env.example` as starting point
-4. **Set Up MCP Servers**: Run `./scripts/setup_mcp_servers.sh` 
-5. **Test Integration**: Use `tests/mcp_test_framework.py`
-6. **Deploy if Needed**: Use `docker/` and `k8s/` configurations
+1. **Use Existing Integrations**: Import tools from `core/integrations/`
+2. **Configure Environment**: Set API keys in `.env` file
+3. **Import and Use**: Import tools directly in your agent code
+4. **Test Integration**: Test API calls with direct tool invocation
+5. **Handle Errors**: Add graceful fallbacks for API failures
 
-### 4. Available MCP Servers (Current)
-
-Reference these when designing agent capabilities:
-
-| Server | Tools | Use Cases |
-|--------|-------|-----------|
-| **Xero** | financial reports, invoices | Accounting, financial data |
-| **Notion** | page creation, search | Documentation, knowledge management |
-
-### 4.1. Available Direct Integrations (Non-MCP)
+### 3. Available Direct Integrations
 
 | Integration | Tools | Use Cases |
 |-------------|-------|-----------|
-| **Perplexity** | web search, research, market analysis | Real-time web research, market insights |
+| **Xero** | `get_xero_profit_and_loss`, `get_xero_balance_sheet`, `get_xero_trial_balance` | Financial data, accounting reports |
+| **Notion** | `create_notion_page`, `get_notion_page`, `update_notion_page` | Documentation, report generation |
+| **Perplexity** | `perplexity_search`, `perplexity_market_research`, `perplexity_ask` | Real-time web research, market insights |
+| **Google Workspace** | Gmail, Calendar, Sheets tools | Email, scheduling, data management |
+| **Slack** | Message, channel, user tools | Team communication, notifications |
 
-### 5. Key Scripts to Reference
+### 4. Example Direct Integration Usage
 
-- `scripts/setup_mcp_servers.sh` - Automated MCP setup
-- `scripts/build_mcp_images.sh` - Docker deployment
-- `tests/mcp_test_framework.py` - Testing framework
+```python
+# Import direct API tools
+from core.integrations.xero.tools import get_xero_profit_and_loss
+from core.integrations.notion.tools import create_notion_page
+from core.integrations.perplexity.tools import perplexity_market_research
+
+# Use tools directly in your agent
+@tool
+def get_financial_data(report_type: str = "profit_and_loss") -> str:
+    """Get financial data from Xero using direct API."""
+    try:
+        if report_type == "profit_and_loss":
+            result = get_xero_profit_and_loss.invoke({})
+        # Handle result and return formatted data
+        return result
+    except Exception as e:
+        return f"Error: {e}"
+```
 
 ## 📋 Agent Development Checklist
 
 When creating any new agent, verify:
 
-- [ ] Read MCP documentation first
-- [ ] Use MCP template as starting point  
-- [ ] Configure required environment variables
-- [ ] Set up MCP servers if needed
-- [ ] Test MCP connections before coding
-- [ ] Follow existing patterns in `templates/mcp-agent/agent.py`
-- [ ] Include error handling and graceful shutdown
+- [ ] Use direct API integrations from `core/integrations/`
+- [ ] Configure required environment variables (API keys)
+- [ ] Test direct API calls before coding
+- [ ] Follow existing patterns in agent examples
+- [ ] Include error handling and graceful fallbacks
 - [ ] Add appropriate logging
-- [ ] Create tests using the test framework
-- [ ] Document any new MCP integrations
+- [ ] Create tests for your agent
+- [ ] Document any new direct integrations
 
-## 🔧 MCP Integration Patterns
+## 🔧 Direct Integration Patterns
 
-### Standard MCP Client Setup
+### Standard Direct API Setup
 ```python
-from templates.mcp_agent.agent import MCPManager, MCPClient
+# Import direct integrations
+from core.integrations.xero.tools import get_xero_profit_and_loss
+from core.integrations.notion.tools import create_notion_page
+from core.integrations.perplexity.tools import perplexity_market_research
 
-# Use existing MCPManager
-mcp_manager = MCPManager()
-results = mcp_manager.start_all()
+# Use in your agent tools
+tools = [
+    get_xero_profit_and_loss,
+    create_notion_page,
+    perplexity_market_research
+]
 ```
 
-### Adding New MCP Servers
+### Adding New Direct Integrations
 ```python
-# Add to MCPManager.setup_clients() method
-if os.getenv('NEW_SERVICE_API_KEY'):
-    self.clients['new_service'] = MCPClient(
-        server_path="node",
-        server_args=["path/to/new-mcp-server.js"],
-        env_vars={"NEW_SERVICE_API_KEY": os.getenv('NEW_SERVICE_API_KEY')}
-    )
-```
-
-### Tool Creation Pattern
-```python
-@tool
-def new_mcp_tool(param: str) -> str:
+# Create new integration file: core/integrations/newservice/tools.py
+@tool("new_service_action", args_schema=NewServiceInput)
+def new_service_action(param: str) -> str:
     """Tool description for LLM."""
-    client = mcp_manager.get_client('service_name')
-    if not client:
-        return "Service not available"
+    api_key = os.environ.get("NEW_SERVICE_API_KEY")
+    if not api_key:
+        return "Error: NEW_SERVICE_API_KEY not set"
     
-    result = client.call_tool("tool_name", {"param": param})
-    return str(result.get("content", "No result"))
+    # Direct API call
+    response = requests.post(
+        "https://api.newservice.com/action",
+        headers={"Authorization": f"Bearer {api_key}"},
+        json={"param": param}
+    )
+    return response.json()
+    )
 ```
 
 ## 📁 File Structure Reference
 
-### Core MCP Files
+### Core Integration Files
 ```
 braid/
-├── docs/guides/mcp-integration/    # MCP documentation
-├── templates/mcp-agent/           # Agent template
-├── scripts/                       # Setup and build scripts  
-├── docker/                        # Container configurations
-├── k8s/                          # Kubernetes manifests
-├── tests/                        # Testing framework
-└── CLAUDE.md                     # This file
+├── core/integrations/              # Direct API integrations (USE THIS)
+│   ├── xero/tools.py              # Xero financial data tools
+│   ├── notion/tools.py            # Notion documentation tools
+│   ├── perplexity/tools.py        # Perplexity research tools
+│   ├── gworkspace/tools.py        # Google Workspace tools
+│   └── slack/tools.py             # Slack communication tools
+├── agents/                        # Example agent implementations
+├── templates/                     # Agent templates and starter code
+└── CLAUDE.md                      # This file
 ```
 
 ### When Creating Financial Agents
-- Use existing `financial-forecast-agent/` as reference
-- Check `test_real_mcp.py` for proven MCP patterns
-- Reference Xero MCP integration examples
+- Use existing agent examples in `agents/` as reference
+- Import tools from `core/integrations/xero/tools.py`
+- Reference direct Xero API integration examples
 
 ### When Creating Research Agents  
-- Reference web research patterns in templates
-- Consider Notion MCP for report generation
+- Use `core/integrations/perplexity/tools.py` for web research
+- Use `core/integrations/notion/tools.py` for report generation
 
 ## 🚨 Important Notes
 
-### Always Check Environment
-```bash
-# Before starting any MCP work, verify:
-ls docs/guides/mcp-integration/     # Documentation exists
-ls templates/mcp-agent/            # Template is available  
-ls scripts/setup_mcp_servers.sh    # Setup script exists
+### Always Use Direct Integrations
+```python
+# Use direct integrations:
+from core.integrations.xero.tools import get_xero_profit_and_loss
+from core.integrations.notion.tools import create_notion_page
+from core.integrations.perplexity.tools import perplexity_search
 ```
 
-### MCP Server Dependencies
-- **Node.js 18+** required for all MCP servers
-- **Environment variables** must be configured
-- **API keys** needed for each service
+### Direct Integration Dependencies
+- **Python only** - no Node.js required
+- **Environment variables** for API keys
+- **Direct HTTP calls** to service APIs
 
 ### Testing Requirements
-- Always test MCP connections before integration
-- Use `tests/mcp_test_framework.py` for validation
-- Run tests: `python tests/mcp_test_framework.py`
+- Test direct API calls with `.invoke({})` method
+- Use actual API keys for integration testing
+- Test error handling and fallbacks
 
 ### Deployment Considerations
-- Use Docker configurations in `docker/`
-- Reference Kubernetes manifests in `k8s/`
+- Simple Python environment requirements
+- Standard LangGraph deployment patterns
 - Follow security best practices for API keys
 
 ## 🔄 Workflow Summary
 
-1. **Read** → MCP documentation and templates
-2. **Copy** → Use `templates/mcp-agent/` as base
-3. **Configure** → Environment and MCP servers  
-4. **Test** → Verify MCP connections work
-5. **Develop** → Follow established patterns
-6. **Deploy** → Use provided Docker/K8s configs
+1. **Import** → Direct integrations from `core/integrations/`
+2. **Configure** → API keys in environment variables  
+3. **Test** → Direct API calls work properly
+4. **Develop** → Follow existing agent patterns in `agents/` and `templates/`
+5. **Deploy** → Standard Python deployment
 
 ## 📞 Quick Reference Commands
 
 ```bash
-# Setup MCP servers
-./scripts/setup_mcp_servers.sh
-
-# Test MCP connections  
-python tests/mcp_test_framework.py
+# Test direct integrations
+python -c "from core.integrations.xero.tools import get_xero_profit_and_loss; print(get_xero_profit_and_loss.invoke({}))"
 
 # Test specific agent
-python templates/mcp-agent/test_agent.py
+python agents/your-agent/agent.py
 
-# Build for deployment
-./scripts/build_mcp_images.sh
-
-# Deploy with Docker
-cd docker && docker-compose -f docker-compose.mcp.yml up -d
+# Create new agent from template
+braid create my-new-agent --template react-agent
 ```
+
+## 🚀 Getting Started
+
+### Quick Agent Creation
+```bash
+# Create a new agent with financial capabilities
+braid create my-financial-agent --template production-financial-agent
+
+# Create a research agent
+braid create my-research-agent --template react-agent
+
+# Create a memory-enabled agent
+braid create my-memory-agent --template memory-agent
+```
+
+### Available Templates
+- `react-agent` - Basic ReAct pattern agent
+- `memory-agent` - Agent with conversation memory
+- `production-financial-agent` - Full financial analysis capabilities
+- `data-enrichment` - Data processing and enrichment
+- `retrieval-agent-template` - RAG-enabled agent
 
 ---
 
-**Remember**: The MCP integration system is fully built and documented. Always use existing templates and patterns rather than rebuilding from scratch. The goal is consistency and reliability across all Braid agents.
+**Remember**: Use direct API integrations from `core/integrations/` for all new agents. Focus on simple, reliable LangGraph patterns with our built-in toolkit.

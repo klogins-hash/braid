@@ -1,6 +1,17 @@
-# MCP Integration Setup Guide
+# MCP Integration Setup Guide (ARCHIVED)
 
-A comprehensive guide for setting up Model Context Protocol (MCP) servers in Braid agents.
+⚠️ **IMPORTANT NOTICE**: MCP integration has been archived in favor of direct API integrations.
+
+**For new agents, use direct integrations instead:**
+- Import tools from `core/integrations/` 
+- Configure API keys in `.env` file
+- No server setup required - just Python imports
+
+**See [CLAUDE.md](../../CLAUDE.md) for current setup patterns.**
+
+---
+
+**Historical Documentation Below** - Model Context Protocol (MCP) server setup in Braid agents.
 
 ## Overview
 

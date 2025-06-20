@@ -1,6 +1,17 @@
-# MCP Production Deployment Guide
+# MCP Production Deployment Guide (ARCHIVED)
 
-Complete guide for deploying MCP servers in production environments using Docker and Kubernetes.
+⚠️ **IMPORTANT NOTICE**: MCP integration has been archived in favor of direct API integrations.
+
+**For new agents, deployment is simplified:**
+- No Docker/K8s infrastructure needed
+- Standard Python deployment patterns
+- Just configure API keys in environment
+
+**See [CLAUDE.md](../../CLAUDE.md) for current deployment patterns.**
+
+---
+
+**Historical Documentation Below** - MCP server deployment using Docker and Kubernetes.
 
 ## Overview
 

@@ -6,7 +6,7 @@ This document outlines the future development direction for the Braid - Agent Bu
 The immediate priority is to ensure the reliability of our core tool integrations. We will build dedicated agents to test the full functionality of these essential services.
 
 - [ ] **Build Additional Test Agents:** Create a suite of test agents to validate other key integrations and common use cases with eventually vertical and industry specific tool libraries.
-- [ ] **Integrations with MCP:** Adopt the Model Context Protocol (MCP) to rapidly integrate with a wide range of third-party services (e.g., Jira, HubSpot, Xero, Microsoft Teams). This involves running community-maintained MCP servers as containerized sidecars to provide a plug-and-play tool architecture for new agents.
+- [ ] **Direct API Integrations:** Expand our direct API integration library to rapidly integrate with a wide range of third-party services (e.g., Jira, HubSpot, Xero, Microsoft Teams). This involves creating simple Python tools that provide direct API access without complex infrastructure requirements.
 
 
 ## Phase 2: Autonomous Evaluation Module

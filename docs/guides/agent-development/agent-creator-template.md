@@ -11,7 +11,7 @@
 **Your Requirements**: 
 [Replace this with your specific task description]
 
-## Tools & MCPs Required
+## Tools & Integrations Required
 
 **🛠️ Available Tools** (See [TOOL_REFERENCE.md](./TOOL_REFERENCE.md) for complete details):
 
@@ -31,13 +31,12 @@
 - **execution**: Process coordination, delays, sub-workflows
 - **code**: Python/JavaScript code execution
 
-**🔌 MCPs (Model Context Protocol servers)**:
-- **notion**: Workspace management
-- **twilio**: Multi-channel messaging (SMS, voice, WhatsApp)
-- **perplexity**: Real-time search and research
-- **mongodb**: Database operations
-- **agentql**: Web automation
-- **alphavantage**: Financial market data
+**🔌 Direct API Integrations**:
+- **notion**: Workspace management (direct API)
+- **perplexity**: Real-time search and research (direct API)
+- **xero**: Financial accounting and business data (direct API)
+- **slack**: Team messaging (enhanced direct integration)
+- **gworkspace**: Google services (direct integration)
 
 **💡 Common Patterns** (See CLAUDE_CODE_GUIDE.md for more):
 ```bash
@@ -45,17 +44,17 @@
 --tools transform,csv,files,http
 
 # Team automation  
---tools slack,gworkspace,files --mcps notion
+--tools slack,gworkspace,files --integrations notion
 
 # Research & analysis
---tools http,transform,files --mcps perplexity
+--tools http,transform,files --integrations perplexity
 
-# Complex workflows
---tools execution,code,http,files,slack --mcps twilio
+# Financial analysis
+--tools transform,files --integrations xero,notion
 ```
 
-**Your Required Tools & MCPs**: 
-[List specific tools and MCPs - see TOOL_REFERENCE.md and CLAUDE_CODE_GUIDE.md]
+**Your Required Tools & Integrations**: 
+[List specific tools and integrations - see TOOL_REFERENCE.md and CLAUDE_CODE_GUIDE.md]
 
 ## Preventative Rules Agent to Follow
 
@@ -101,7 +100,7 @@
 1. **Start with CLAUDE_CODE_GUIDE.md** - Get familiar with codebase and patterns
 2. **Fill out requirements above** - Define tasks, tools, and safety rules
 3. **Use agent creation patterns** - See CLAUDE_CODE_GUIDE.md for common scenarios
-4. **Create agent**: `braid new <agent-name> --production --tools <tool-list> --mcps <mcp-list> --description "description"`
+4. **Create agent**: `braid new <agent-name> --production --tools <tool-list> --integrations <integration-list> --description "description"`
 5. **Develop iteratively** - Use `make test` and debugging patterns from guide
 
 **Example Commands**:
@@ -113,10 +112,10 @@ braid new team-bot --production --tools slack,gworkspace,files --description "Te
 braid new data-processor --production --tools transform,csv,files,slack --description "Process data and notify team"
 
 # Research agent with external services
-braid new research-agent --production --tools http,files --mcps perplexity,notion --description "Research and knowledge management"
+braid new research-agent --production --tools http,files --integrations perplexity,notion --description "Research and knowledge management"
 
-# Complex workflow automation
-braid new workflow-agent --production --tools execution,code,http,files,slack --mcps twilio --description "Automated workflow with notifications"
+# Financial analysis agent
+braid new financial-agent --production --tools transform,files --integrations xero,notion --description "Financial analysis and reporting"
 ```
 
 **🔍 See CLAUDE_CODE_GUIDE.md for**:
@@ -124,4 +123,4 @@ braid new workflow-agent --production --tools execution,code,http,files,slack --
 - Development patterns and debugging
 - Tool selection strategies
 - Complex agent examples
-- Memory, RAG, and MCP integration patterns
+- Memory, RAG, and direct integration patterns

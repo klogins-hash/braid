@@ -27,16 +27,16 @@ make test
 python src/my_agent/graph.py
 ```
 
-### 3. Add MCPs (Model Context Protocol servers)
+### 3. Add Direct Integrations
 ```bash
-# MCPs extend agent capabilities with external services
+# Direct integrations provide simple API access to external services
 braid new my-agent --production \
   --tools slack,files \
-  --mcps notion,twilio \
-  --description "Agent with Notion and Twilio integration"
+  --integrations notion,perplexity \
+  --description "Agent with Notion and Perplexity integration"
 
-# IMPORTANT: For MCP-enabled agents, ALWAYS read CLAUDE.md first
-# It contains the complete MCP integration workflow and file references
+# IMPORTANT: For complex agents, ALWAYS read CLAUDE.md first
+# It contains the complete direct integration workflow and patterns
 ```
 
 ## 📁 Codebase Architecture
@@ -50,7 +50,7 @@ braid/
 ├── core/                     # Core functionality
 │   ├── tools/                # In-house tools (files, http, transform)
 │   ├── integrations/         # External services (slack, gworkspace)
-│   ├── mcp/                  # MCP system (discovery, integration)
+│   ├── integrations/         # Direct API integrations (xero, notion, perplexity)
 │   ├── memory.py             # Memory management
 │   └── rag_resource.py       # RAG capabilities
 └── langgraph_agent_guide/    # Comprehensive LangGraph docs
@@ -82,16 +82,14 @@ my-agent/
 - **execution**: Workflow control (3 tools)
 - **code**: Python/JS execution (2 tools)
 
-### MCP Library (7 Production-Ready MCPs)
-- **perplexity**: Real-time web research and search (3 tools)
-- **xero**: Financial accounting and business data (50+ tools)  
-- **notion**: Workspace and knowledge management (19+ tools)
-- **mongodb**: Database operations and queries
-- **agentql**: Web automation and scraping
-- **alphavantage**: Financial market data
-- **twilio**: SMS, voice, WhatsApp messaging
+### Direct API Integrations (5 Production-Ready)
+- **perplexity**: Real-time web research and search
+- **xero**: Financial accounting and business data
+- **notion**: Workspace and knowledge management
+- **gworkspace**: Gmail, Calendar, Sheets, Drive
+- **slack**: Team messaging and notifications
 
-> **🎯 MCP Integration System**: Complete MCP setup with automated server management, Docker deployment, and testing. See `CLAUDE.md` for MCP development workflow.
+> **🎯 Simple Integration**: Direct API integrations with Python imports. Just configure API keys and start building. See `CLAUDE.md` for integration patterns.
 
 ### Common Tool Combinations
 ```bash
@@ -167,8 +165,8 @@ tools.append(rag_tool)
 # Use production template with specific tools
 braid new my-agent --production --tools [tools] --description "Description"
 
-# With MCPs for external services
-braid new my-agent --production --tools [tools] --mcps [mcps] --description "Description"
+# With direct integrations for external services
+braid new my-agent --production --tools [tools] --integrations [integrations] --description "Description"
 ```
 
 ### 2. Core Development Files
@@ -211,7 +209,7 @@ braid new data-processor --production \
 ```bash
 braid new team-assistant --production \
   --tools slack,gworkspace,files \
-  --mcps notion \
+  --integrations notion \
   --description "Team coordination with Slack and Google Workspace"
 ```
 **Pattern**: Monitor → Process → Notify → Archive
@@ -220,7 +218,7 @@ braid new team-assistant --production \
 ```bash
 braid new research-agent --production \
   --tools http,transform,files \
-  --mcps perplexity \
+  --integrations perplexity \
   --description "Research topics and generate analysis reports"
 ```
 **Pattern**: Search → Analyze → Synthesize → Report
@@ -251,9 +249,9 @@ braid new workflow-agent --production \
    - Add logging to see agent's decision process
    - Use LangSmith for detailed tracing
 
-4. **MCP Integration Issues**
-   - Verify MCP environment variables in .env
-   - Check MCP health: `docker compose ps`
+4. **Integration Issues**
+   - Verify API keys in .env file
+   - Test direct API calls with `.invoke()` method
 
 ### Debugging Tools
 ```python
@@ -294,7 +292,7 @@ kubectl apply -f k8s/
 - **[agent-creator-template.md](./agent-creator-template.md)** - Requirements gathering template
 
 **Advanced Topics**:
-- **[PRODUCTION_MCP_SUMMARY.md](./PRODUCTION_MCP_SUMMARY.md)** - MCP system architecture and deployment
+- **`core/integrations/`** - Direct API integration examples and patterns
 - **`langgraph_agent_guide/`** - Comprehensive LangGraph concepts (15 detailed guides)
 - **[CLI_USAGE.md](./CLI_USAGE.md)** - Complete CLI command reference
 
@@ -325,7 +323,7 @@ kubectl apply -f k8s/
 
 1. **Multi-Agent Systems**: Use supervisor patterns from langgraph_agent_guide/
 2. **Memory Integration**: Combine persistent memory with RAG
-3. **MCP Orchestration**: Integrate multiple MCPs for comprehensive capabilities
+3. **Integration Orchestration**: Combine multiple direct integrations for comprehensive capabilities
 4. **Performance Optimization**: Use deployment profiles for production scaling
 
 ---
