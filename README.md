@@ -70,8 +70,24 @@ cd braid
 # Set up environment
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install core dependencies only (recommended)
 pip install -e .
+
+# Or install with specific capabilities:
+pip install -e '.[financial,xero,notion]'     # Financial agent
+pip install -e '.[research,perplexity]'       # Research agent  
+pip install -e '.[complete-financial]'        # Full financial stack
 ```
+
+### 📦 Smart Dependencies
+Braid uses selective installation - install only what you need:
+- **Core**: Essential LangGraph + LangChain components
+- **Integrations**: `xero`, `notion`, `perplexity`, `gworkspace`, `slack`
+- **Agent Types**: `financial`, `research`, `retrieval`, `memory`
+- **Bundles**: `complete-financial`, `complete-research`
+
+See [Dependency Guide](docs/guides/DEPENDENCY_GUIDE.md) for details.
 
 ### Start Building
 1. **Ask Claude Code to prepare**: "Please prepare to create a LangGraph agent by reviewing the docs and examples."

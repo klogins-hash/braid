@@ -135,7 +135,9 @@ TOOL_REGISTRY = {
 @click.option('--production', '-p', is_flag=True, help='Create a production-ready agent with full project structure.')
 @click.option('--description', '-d', default='AI assistant', help='Brief description of what the agent does.')
 @click.option('--no-mcp-discovery', is_flag=True, help='Skip interactive MCP discovery and suggestions.')
-def new_command(project_name, tools, mcps, production, description, no_mcp_discovery):
+@click.option('--template', help='Agent template to use (react-agent, memory-agent, retrieval-agent-template, etc.)')
+@click.option('--agent-type', type=click.Choice(['financial', 'research', 'retrieval', 'memory']), help='Agent type for automatic dependency selection.')
+def new_command(project_name, tools, mcps, production, description, no_mcp_discovery, template, agent_type):
     """
     Creates a new Braid agent project from a template.
     You can specify foundational tools to include with --tools and MCPs with --mcps.
@@ -222,13 +224,31 @@ def new_command(project_name, tools, mcps, production, description, no_mcp_disco
         click.echo(f"   To get started, run:")
         click.echo(f"   cd {project_name}")
         if production:
-            click.echo(f"   pip install -e '.[dev]'")
+            # Generate selective installation command based on agent type and tools
+            install_extras = []
+            if agent_type:
+                install_extras.append(agent_type)
+            if tool_list:
+                for tool in tool_list:
+                    if tool in ['slack', 'gworkspace', 'ms365', 'xero', 'notion', 'perplexity']:
+                        install_extras.append(tool)
+            if mcp_list:
+                install_extras.append('dev')
+            
+            if install_extras:
+                extras_str = ','.join(set(install_extras))
+                click.echo(f"   pip install -e '.[{extras_str}]'")
+            else:
+                click.echo(f"   pip install -e '.[dev]'")
             click.echo(f"   cp .env.example .env")
             click.echo(f"   # Fill in your .env file")
             click.echo(f"   python src/{project_name}/graph.py")
             click.echo(f"   # Or run tests with: make test")
         else:
             click.echo(f"   pip install -r requirements.txt")
+            # Show selective installation option
+            if agent_type or tool_list:
+                click.echo(f"   # Or install selectively: pip install 'braid[{agent_type or 'research'}]'")
             click.echo(f"   # Fill in your .env file")
             click.echo(f"   python agent.py")
 

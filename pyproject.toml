@@ -9,20 +9,12 @@ description = "A toolkit for building, debugging, and deploying LangGraph agents
 authors = [{ name = "Braid Team", email = "hello@braid.ai" }]
 license = { text = "Apache-2.0" }
 dependencies = [
-    "langchain>=0.1.0",
-    "langgraph>=0.1.0",
-    "python-dotenv>=0.21.0",
+    "langchain>=0.2.14",
+    "langgraph>=0.2.6", 
+    "python-dotenv>=1.0.1",
     "click>=8.0.0",
     "toml>=0.10.2",
-    "tavily-python",
-    "yfinance",
-    "pandas",
-    "requests",
-    "lxml",
-    "llama-index",
-    "llama-index-llms-openai",
-    "llama-index-embeddings-openai",
-    "pypdf"
+    "requests>=2.25.0"
 ]
 
 [project.urls]
@@ -36,9 +28,10 @@ include = ["braid*", "core*", "agents*"]
 where = ["."]
 
 [project.optional-dependencies]
+# Integration dependencies
 gworkspace = [
     "google-api-python-client",
-    "google-auth-httplib2",
+    "google-auth-httplib2", 
     "google-auth-oauthlib"
 ]
 slack = [
@@ -46,6 +39,58 @@ slack = [
 ]
 ms365 = [
     "O365"
+]
+xero = [
+    "xero-python>=2.0.0"
+]
+notion = [
+    "notion-client>=2.0.0"
+]
+perplexity = [
+    "openai>=1.0.0"
+]
+
+# Agent type dependencies
+financial = [
+    "yfinance",
+    "pandas>=1.3.0",
+    "numpy>=1.21.0"
+]
+research = [
+    "tavily-python",
+    "langchain-tavily>=0.1.0"
+]
+retrieval = [
+    "llama-index>=0.10.0",
+    "llama-index-llms-openai",
+    "llama-index-embeddings-openai",
+    "pypdf",
+    "lxml",
+    "langchain-elasticsearch>=0.2.2,<0.3.0",
+    "langchain-pinecone>=0.1.3,<0.2.0",
+    "langchain-mongodb>=0.1.9"
+]
+memory = [
+    "langgraph-sdk>=0.1.32"
+]
+
+# Complete agent bundles
+complete-financial = [
+    "braid[financial,xero,notion,perplexity]"
+]
+complete-research = [
+    "braid[research,notion,perplexity]"
+]
+complete-retrieval = [
+    "braid[retrieval,notion]"
+]
+
+# Development dependencies
+dev = [
+    "mypy>=1.11.1",
+    "ruff>=0.6.1",
+    "pytest>=8.3.5",
+    "pytest-asyncio"
 ]
 
 [project.entry-points."braid.tools"]
