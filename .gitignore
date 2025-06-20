@@ -1,27 +1,56 @@
-# API Keys and Credentials
-credentials/
-*.env
+# ── OS junk ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
 
-# Ignore all .env files
-.env*
-# Except for .env.example
-!.env.example 
-
-# Python
+# ── Python byte-code & build artefacts ────────────────
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.so
 *.pyd
-venv/
+*.egg
+*.egg-info/
 build/
 dist/
-*.egg-info/
-*.egg
+.eggs/
+pip-wheel-metadata/
 
-# Database
+# ── Virtual-envs / tooling ────────────────────────────
+.env
+.env.*
+.venv/
+venv/
+.poetry/
+.nox/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+coverage.*
+htmlcov/
+
+# ── Editors / IDEs ────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# ── Jupyter ───────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Logs & misc ───────────────────────────────────────
+*.log
+*.sqlite3
+*.bak
+*.tmp
+
+# -- Node --
+node_modules/
+
+# -- Project specific --
+credentials/
+# Except for .env.example
+!.env.example
 *.db
 *.db-shm
 *.db-wal
-
-# OS-specific
-.DS_Store nango.yml/
+nango.yml/
