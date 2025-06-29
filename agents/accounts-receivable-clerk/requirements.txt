@@ -17,9 +17,14 @@ pydantic>=2.0.0
 # pymupdf>=1.24.0
 # python-docx>=1.1.0
 
-# Optional: Additional communication tools
-# Uncomment if you need Twilio SMS capabilities
-# twilio>=8.0.0
+# Communication tools for live demo
+twilio>=8.0.0
+slack-sdk>=3.0.0
+
+# Google API for Gmail and Drive integration
+google-api-python-client>=2.0.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.0.0
 
 # Optional: Enhanced scheduling
 # Uncomment for production scheduling features

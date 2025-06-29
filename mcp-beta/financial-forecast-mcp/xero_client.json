@@ -1,9 +1,0 @@
-{
-  "xero": {
-    "command": "npx",
-    "args": ["-y", "@xero-api/xero-mcp-server"],
-    "env": {
-      "XERO_BEARER_TOKEN": "${XERO_BEARER_TOKEN}"
-    }
-  }
-}
