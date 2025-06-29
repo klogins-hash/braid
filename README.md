@@ -31,13 +31,13 @@
 - Monitoring, logging, and health checks
 - Kubernetes manifests (when needed)
 
-## 💬 Real Examples
+## �� Real Examples
 
-### Financial Operations Assistant
+### Mural Content Assistant
 ```
-Requirements: Pull financials from Xero → Analyze trends → Generate reports in Notion → Notify team on Slack
-Tools: MCPs: xero, notion + Tools: slack, gworkspace
-Result: Fully automated financial operations and reporting system
+Requirements: Create murals from conversations → Add content like stickies & titles → Manage collaborators
+Tools: Direct Mural API Integration
+Result: An intuitive, conversational interface for visual collaboration on Mural.
 ```
 
 ### Autonomous AR Clerk
