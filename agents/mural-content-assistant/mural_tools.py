@@ -290,6 +290,156 @@ def detect_placement_context(text: str, mural_context: dict = None) -> str:
     # Default to general placement
     return "general"
 
+def find_widget_by_text(mural_id: str, search_text: str) -> dict:
+    """
+    Find a widget in the mural that contains or matches the search text.
+    Returns widget info including position, or None if not found.
+    """
+    try:
+        widgets_result = get_mural_widgets.invoke({"mural_id": mural_id})
+        widgets_data = json.loads(widgets_result)
+        
+        if "error" in widgets_data:
+            return None
+            
+        widgets = widgets_data.get("value", [])
+        search_lower = search_text.lower()
+        
+        # Look for exact or partial text matches
+        for widget in widgets:
+            widget_text = widget.get("text", "").lower()
+            widget_title = widget.get("title", "").lower()
+            
+            # Check for match in text or title
+            if (search_lower in widget_text or 
+                widget_text in search_lower or
+                search_lower in widget_title or
+                widget_title in search_lower):
+                
+                return {
+                    "id": widget.get("id"),
+                    "text": widget.get("text", ""),
+                    "title": widget.get("title", ""),
+                    "x": widget.get("x", 0),
+                    "y": widget.get("y", 0),
+                    "width": widget.get("width", 150),
+                    "height": widget.get("height", 150),
+                    "type": widget.get("type", "unknown")
+                }
+        
+        return None
+        
+    except Exception:
+        return None
+
+def calculate_contextual_position(mural_id: str, reference_text: str, placement_type: str = "near") -> tuple:
+    """
+    Calculate position relative to a specific widget or area mentioned by the user.
+    placement_type: 'near', 'in', 'below', 'above', 'left', 'right'
+    """
+    try:
+        # Find the reference widget
+        reference_widget = find_widget_by_text(mural_id, reference_text)
+        
+        if not reference_widget:
+            # Fallback to general auto-placement
+            return calculate_smart_position(mural_id, "general")
+        
+        ref_x = reference_widget["x"]
+        ref_y = reference_widget["y"] 
+        ref_width = reference_widget["width"]
+        ref_height = reference_widget["height"]
+        
+        # Standard spacing and dimensions
+        spacing = 20
+        widget_width = 150
+        widget_height = 150
+        
+        # Calculate position based on placement type
+        if placement_type in ["in", "inside", "within"]:
+            # Place inside the widget area (useful for large containers/areas)
+            return ref_x + spacing, ref_y + spacing
+            
+        elif placement_type in ["below", "under", "underneath"]:
+            # Place below the reference widget
+            return ref_x, ref_y + ref_height + spacing
+            
+        elif placement_type in ["above", "over", "on top"]:
+            # Place above the reference widget  
+            return ref_x, ref_y - widget_height - spacing
+            
+        elif placement_type in ["left", "left of"]:
+            # Place to the left of reference widget
+            return ref_x - widget_width - spacing, ref_y
+            
+        elif placement_type in ["right", "right of"]:
+            # Place to the right of reference widget
+            return ref_x + ref_width + spacing, ref_y
+            
+        else:  # "near", "next to", or default
+            # Place to the right and slightly below (most natural)
+            return ref_x + ref_width + spacing, ref_y + spacing
+            
+    except Exception:
+        # Ultimate fallback
+        return calculate_smart_position(mural_id, "general")
+
+def parse_contextual_request(text: str) -> tuple:
+    """
+    Parse user text to extract contextual placement information.
+    Returns (reference_text, placement_type) or (None, None) if no context found.
+    """
+    text_lower = text.lower()
+    
+    # Patterns for contextual placement
+    contextual_patterns = [
+        # "in the X section/area/box" (with or without quotes)
+        (r"in\s+the\s+['\"]([^'\"]+)['\"]", "in"),
+        (r"in\s+the\s+(\w+(?:\s+\w+)*)\s+(?:section|area|box|widget|container)", "in"),
+        (r"inside\s+['\"]([^'\"]+)['\"]", "in"),
+        (r"inside\s+the\s+(\w+(?:\s+\w+)*)", "in"),
+        (r"within\s+['\"]([^'\"]+)['\"]", "in"),
+        (r"within\s+the\s+(\w+(?:\s+\w+)*)", "in"),
+        
+        # "near X" or "next to X" (with or without quotes)
+        (r"near\s+['\"]([^'\"]+)['\"]", "near"),
+        (r"near\s+the\s+(\w+(?:\s+\w+)*)", "near"),
+        (r"next\s+to\s+['\"]([^'\"]+)['\"]", "near"),
+        (r"next\s+to\s+the\s+(\w+(?:\s+\w+)*)", "near"),
+        (r"by\s+['\"]([^'\"]+)['\"]", "near"),
+        (r"by\s+the\s+(\w+(?:\s+\w+)*)", "near"),
+        
+        # "below X" or "under X"
+        (r"below\s+['\"]([^'\"]+)['\"]", "below"),
+        (r"below\s+the\s+(\w+(?:\s+\w+)*)", "below"),
+        (r"under\s+['\"]([^'\"]+)['\"]", "below"),
+        (r"under\s+the\s+(\w+(?:\s+\w+)*)", "below"),
+        (r"underneath\s+['\"]([^'\"]+)['\"]", "below"),
+        (r"underneath\s+the\s+(\w+(?:\s+\w+)*)", "below"),
+        
+        # "above X"
+        (r"above\s+['\"]([^'\"]+)['\"]", "above"),
+        (r"above\s+the\s+(\w+(?:\s+\w+)*)", "above"),
+        (r"over\s+['\"]([^'\"]+)['\"]", "above"),
+        (r"over\s+the\s+(\w+(?:\s+\w+)*)", "above"),
+        
+        # "to the left/right of X"
+        (r"(?:to\s+the\s+)?left\s+of\s+['\"]([^'\"]+)['\"]", "left"),
+        (r"(?:to\s+the\s+)?left\s+of\s+the\s+(\w+(?:\s+\w+)*)", "left"),
+        (r"(?:to\s+the\s+)?right\s+of\s+['\"]([^'\"]+)['\"]", "right"),
+        (r"(?:to\s+the\s+)?right\s+of\s+the\s+(\w+(?:\s+\w+)*)", "right"),
+    ]
+    
+    import re
+    
+    for pattern, placement_type in contextual_patterns:
+        match = re.search(pattern, text_lower)
+        if match:
+            reference_text = match.group(1)
+            return reference_text, placement_type
+    
+    return None, None
+
 # MURAL MANAGEMENT TOOLS
 
 @tool("create_mural", args_schema=CreateMuralInput)
@@ -525,19 +675,33 @@ def create_sticky_note(mural_id: str, text: str, x: Optional[int] = None, y: Opt
 
         # Handle intelligent auto-placement
         if x is None or y is None:
-            # Detect placement context if not provided
-            if placement_context is None:
-                placement_context = detect_placement_context(text)
+            # First check for contextual placement (e.g., "in the customer section")
+            reference_text, placement_type = parse_contextual_request(text)
             
-            # Calculate smart position
-            auto_x, auto_y = calculate_smart_position(mural_id, placement_context)
-            final_x = x if x is not None else auto_x
-            final_y = y if y is not None else auto_y
-            placement_info = {
-                "auto_placed": True,
-                "strategy": placement_context,
-                "position": f"({final_x}, {final_y})"
-            }
+            if reference_text and placement_type:
+                # Use contextual placement
+                auto_x, auto_y = calculate_contextual_position(mural_id, reference_text, placement_type)
+                final_x = x if x is not None else auto_x
+                final_y = y if y is not None else auto_y
+                placement_info = {
+                    "auto_placed": True,
+                    "strategy": f"contextual ({placement_type})",
+                    "reference": reference_text,
+                    "position": f"({final_x}, {final_y})"
+                }
+            else:
+                # Use general auto-placement
+                if placement_context is None:
+                    placement_context = detect_placement_context(text)
+                
+                auto_x, auto_y = calculate_smart_position(mural_id, placement_context)
+                final_x = x if x is not None else auto_x
+                final_y = y if y is not None else auto_y
+                placement_info = {
+                    "auto_placed": True,
+                    "strategy": placement_context,
+                    "position": f"({final_x}, {final_y})"
+                }
         else:
             final_x, final_y = x, y
             placement_info = {
