@@ -31,12 +31,12 @@
 - Monitoring, logging, and health checks
 - Kubernetes manifests (when needed)
 
-## �� Real Examples
+## Real Examples
 
-### Mural Content Assistant
+### Mura.co Content Assistant
 ```
 Requirements: Create murals from conversations → Add content like stickies & titles → Manage collaborators
-Tools: Direct Mural API Integration
+Tools: Direct Mural API Integration, Perplexity
 Result: An intuitive, conversational interface for visual collaboration on Mural.
 ```
 
