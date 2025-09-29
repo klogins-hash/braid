@@ -1,0 +1,46 @@
+# LibreChat Configuration for Braid AI
+version: 1.0.5
+cache: true
+
+endpoints:
+  custom:
+    - name: "Braid AI"
+      apiKey: "${BRAID_API_KEY}"
+      baseURL: "http://braid:8000/v1"
+      models:
+        default: [
+          "claude-4-sonnet-20250101",
+          "claude-4-opus-20250101", 
+          "claude-4-haiku-20250101"
+        ]
+        fetch: false
+      titleConvo: true
+      titleModel: "claude-4-sonnet-20250101"
+      summarize: false
+      summaryModel: "claude-4-haiku-20250101"
+      forcePrompt: false
+      modelDisplayLabel: "Braid AI"
+      iconURL: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png"
+      headers:
+        "Content-Type": "application/json"
+        "User-Agent": "LibreChat-Braid"
+
+interface:
+  privacyPolicy:
+    externalUrl: "https://braid-production.up.railway.app/privacy"
+  termsOfService:
+    externalUrl: "https://braid-production.up.railway.app/terms"
+
+registration:
+  allowedDomains: []
+
+fileConfig:
+  endpoints:
+    braid:
+      fileLimit: 5
+      fileSizeLimit: 10
+      totalSizeLimit: 50
+      supportedMimeTypes:
+        - "text/plain"
+        - "text/markdown"
+        - "application/json"
