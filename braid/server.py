@@ -65,8 +65,8 @@ async def root():
 async def health_check():
     """Health check endpoint for Railway."""
     try:
-        # Test database connection
-        await supabase_client.client.table("agents").select("count").execute()
+        # Test database connection (supabase client is synchronous, not async)
+        supabase_client.client.table("agents").select("count").execute()
         return {
             "status": "healthy",
             "database": "connected",
