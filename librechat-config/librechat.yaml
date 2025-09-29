@@ -1,0 +1,75 @@
+# LibreChat Configuration for Braid AI Integration
+version: 1.0.5
+cache: true
+
+# Custom endpoints configuration
+endpoints:
+  custom:
+    # Braid AI Agent System
+    - name: "Braid AI"
+      apiKey: "${BRAID_API_KEY}"
+      baseURL: "http://braid:8000"
+      models:
+        default: [
+          "claude-4-sonnet-20250101",
+          "claude-4-opus-20250101", 
+          "claude-4-haiku-20250101"
+        ]
+        fetch: false
+      titleConvo: true
+      titleModel: "claude-4-sonnet-20250101"
+      summarize: false
+      summaryModel: "claude-4-haiku-20250101"
+      forcePrompt: false
+      modelDisplayLabel: "Braid AI"
+      iconURL: "https://cdn-icons-png.flaticon.com/512/8943/8943377.png"
+      headers:
+        "Content-Type": "application/json"
+        "User-Agent": "LibreChat-Braid-Integration"
+
+# Interface customization
+interface:
+  privacyPolicy:
+    externalUrl: "https://braid-production.up.railway.app/privacy"
+  termsOfService:
+    externalUrl: "https://braid-production.up.railway.app/terms"
+
+# File handling
+fileConfig:
+  endpoints:
+    braid:
+      fileLimit: 5
+      fileSizeLimit: 10  # MB
+      totalSizeLimit: 50  # MB
+      supportedMimeTypes:
+        - "text/plain"
+        - "text/markdown"
+        - "application/json"
+        - "text/csv"
+
+# Rate limiting
+rateLimits:
+  fileUploads:
+    ipMax: 100
+    ipWindowInMinutes: 60
+    userMax: 50
+    userWindowInMinutes: 60
+
+# Registration and login
+registration:
+  socialLogins: ["github", "google", "discord"]
+  allowedDomains: []
+
+# Speech to text
+speech:
+  tts:
+    openai:
+      url: "http://braid:8000/tts"
+      apiKey: "${BRAID_API_KEY}"
+      model: "tts-1"
+      voices: ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
+  stt:
+    openai:
+      url: "http://braid:8000/stt" 
+      apiKey: "${BRAID_API_KEY}"
+      model: "whisper-1"

@@ -11,6 +11,7 @@ import uvicorn
 import logging
 
 from braid.database.supabase_client import supabase_client
+from braid.librechat_adapter import router as librechat_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,18 +26,20 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include LibreChat adapter routes
+app.include_router(librechat_router)
 
 # Request/Response Models
 class AgentRequest(BaseModel):
     agent_type: str
     config: Dict[str, Any] = {}
     tools: list = []
-
 class AgentResponse(BaseModel):
     agent_id: str
     status: str
