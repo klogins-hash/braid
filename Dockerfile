@@ -17,14 +17,16 @@ RUN node --version && npm --version
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml requirements.lock ./
-COPY setup.py ./
+COPY requirements.txt ./
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+
+# Create braid directory structure if it doesn't exist
+RUN mkdir -p braid/database
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash agent && \
@@ -48,4 +50,4 @@ ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
 # Default command - will be overridden by Railway if needed
-CMD ["python", "-m", "braid.server"]
+CMD ["python", "braid/server.py"]
